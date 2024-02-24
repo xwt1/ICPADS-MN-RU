@@ -9,20 +9,20 @@
 
 Point::Point() {}
 
-Point::Point(std::initializer_list<double> initList) : coordinates(initList) {}
+Point::Point(std::initializer_list<double> initList) : coordinates_(initList) {}
 
 const std::vector<double>& Point::GetCoordinates() const {
-    return coordinates;
+    return coordinates_;
 }
 
 double Point::GetCoordinate(size_t index) const {
-    if (index < coordinates.size()) {
-        return coordinates[index];
+    if (index < coordinates_.size()) {
+        return coordinates_[index];
     } else {
         throw std::out_of_range("Index is out of range.");
     }
 }
 
 size_t Point::GetDimension() const {
-    return coordinates.size();
+    return coordinates_.size();
 }
