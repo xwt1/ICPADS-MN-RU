@@ -6,6 +6,7 @@
 //#include
 #include <bits/stdc++.h>
 
+#include "node.h"
 #include "base_graph.h"
 using namespace mlpack;
 
@@ -31,6 +32,7 @@ int main(){
 //
 //    return 0;
 
+    int temp;
 
 
     std::vector<Point> points = {
@@ -40,9 +42,13 @@ int main(){
             {10.0, 11.0} // 新添加的点
             // 可以继续添加更多点
     };
-    Graph::BaseGraph g(points);
+    Graph::BaseGraph g(points,1);
 //    g.print();
     std::cout << "MLPack version: " << mlpack::util::GetVersion() << std::endl;
+
+    std::cout<<1<<std::endl;
     return 0;
 
 }
+
+

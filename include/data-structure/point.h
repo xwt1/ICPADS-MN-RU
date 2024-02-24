@@ -22,7 +22,7 @@ public:
     size_t GetDimension() const;
 
 private:
-    std::vector<double> coordinates; // 存储点的坐标
+    std::vector<double> coordinates_; // 存储点的坐标
 };
 
 #endif //GRAPH_SEARCH_POINT_H

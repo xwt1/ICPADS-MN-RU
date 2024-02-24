@@ -10,18 +10,37 @@
 
 #include <mlpack/core.hpp>
 #include <mlpack/methods/dbscan/dbscan.hpp>
+#include <mlpack/methods/kmeans/kmeans.hpp>
 
 #include "point.h"
+#include "node.h"
 #include "util.h"
 
 namespace Graph{
-//    template <class T>
+    using namespace util;
+
+    class BaseGraphCluster{
+    public:
+        BaseGraphCluster();
+        BaseGraphCluster(unsigned short cluster_id);
+        unsigned short getClusterId() const;
+    private:
+        std::vector <std::shared_ptr<Node>> graph_;
+        std::unordered_map<ull,ull> graph_node_table_;
+        unsigned short cluster_id_{util::short_max};
+    };
+
+
     class BaseGraph{
     public:
         BaseGraph();
-//        BaseGraph(std::vector<T> data);
-        BaseGraph(std::vector<Point> data);
+        BaseGraph(std::vector<Point> data,size_t cluster_category_id);
+
+    private:
+        std::vector <BaseGraphCluster> base_graph_cluster_;
     };
+
+
 }
 
 
