@@ -2,9 +2,9 @@
 // Created by xiaowentao on 2024/2/15.
 //
 
-#include <base_graph.h>
+#include "base_graph.h"
 
-
+//#include "point.h"
 
 Graph::BaseGraph::BaseGraph(std::vector<Point> data, size_t cluster_category_id){
 
@@ -51,10 +51,19 @@ Graph::BaseGraph::BaseGraph() {
 
 }
 
-unsigned short Graph::BaseGraphCluster::getClusterId() const {
+unsigned short Graph::BaseGraphCluster::GetClusterId() const {
     return cluster_id_;
 }
 
-Graph::BaseGraphCluster::BaseGraphCluster(unsigned short cluster_id){
+Graph::BaseGraphCluster::BaseGraphCluster(){
 
 }
+
+Graph::BaseGraphCluster::BaseGraphCluster(unsigned short cluster_id , std::vector <std::shared_ptr<Node> >& node):cluster_id_(cluster_id){
+//    if
+}
+
+void Graph::BaseGraphCluster::GetFurthestDis(std::vector <std::shared_ptr<Node> >& node){
+    
+}
+

@@ -2,10 +2,11 @@
 // Created by xiaowentao on 2024/2/15.
 //
 
-#include "data-structure/point.h"
+#include "point.h"
+#include "point.h"
 
 //#include "ut"
-#include "util.h"
+//#include "util.h"
 
 Point::Point() {}
 
