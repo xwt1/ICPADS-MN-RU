@@ -22,11 +22,14 @@ namespace Graph{
     class BaseGraphCluster{
     public:
         BaseGraphCluster();
-        BaseGraphCluster(unsigned short cluster_id);
-        unsigned short getClusterId() const;
+        //根据分配的聚类簇号和node点集合构建一个方向图,核心
+        //默认node中第一个点为聚簇中心点
+        BaseGraphCluster(unsigned short cluster_id , std::vector <std::shared_ptr<Node> >& node);
+        void GetFurthestDis(std::vector <std::shared_ptr<Node> >& node);
+        unsigned short GetClusterId() const;
     private:
         std::vector <std::shared_ptr<Node>> graph_;
-        std::unordered_map<ull,ull> graph_node_table_;
+        std::unordered_map<ull,size_t> graph_node_table_;    // get the index by the node_id
         unsigned short cluster_id_{util::short_max};
     };
 

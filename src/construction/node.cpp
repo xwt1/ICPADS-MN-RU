@@ -25,6 +25,12 @@ const std::vector<std::shared_ptr<Graph::Node>>& Graph::Node::GetEdges() const {
 //}
 
 // 添加一个边
-void Graph::Node::AddEdge(std::shared_ptr<Node> edge) {
-    edge_.push_back(edge);
+void Graph::Node::AddEdge(util::ull node_id, std::unordered_map<util::ull,std::shared_ptr<Node>> & node_table) {
+//    auto wtf = node_table[node_id];
+    this->edge_.push_back(node_table[node_id]);
+}
+
+void Graph::Node::AddEdge(std::shared_ptr<Node> node) {
+//    auto wtf = node_table[node_id];
+    this->edge_.push_back(node);
 }

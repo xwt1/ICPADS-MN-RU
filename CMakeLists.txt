@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(graph-search VERSION 1.0)
 
+# 定义一个宏，将项目根目录的路径传递给C++代码
+add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}")
+
 # 查找第三方库
 
 # 查找OpenMP
@@ -15,6 +18,11 @@ if(NOT MLPACK_FOUND)
     message(FATAL_ERROR "MLPACK not found. Please run: apt-get install libmlpack-dev")
 endif()
 
+# 包括HNSWlib目录
+#add_subdirectory(external/hnswlib)
+add_subdirectory(external/D-hnswlib)
+
+
 # 添加子目录，这会创建graph-search目标
 add_subdirectory(src)
 
@@ -27,3 +35,6 @@ endif()
 
 # 链接MLPACK库到graph-search目标
 target_link_libraries(graph-search PRIVATE mlpack)
+
+# 链接HNSWlib库到您的应用程序
+target_link_libraries(graph-search PRIVATE hnswlib)
