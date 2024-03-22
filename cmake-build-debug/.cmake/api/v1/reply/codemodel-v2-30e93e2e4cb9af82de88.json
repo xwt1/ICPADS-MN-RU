@@ -1,0 +1,182 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "external/D-hnswlib",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-external.D-hnswlib-Debug-1f95d9b0d905b8345e0a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 1,
+					"source" : "external/D-hnswlib"
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						3,
+						5,
+						6,
+						7
+					],
+					"jsonFile" : "directory-src-Debug-b6cf2213fc5053b67c22.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"build" : "src/construction",
+					"childIndexes" : 
+					[
+						4
+					],
+					"jsonFile" : "directory-src.construction-Debug-a55be774e6e4cdea2fc1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 0,
+					"source" : "src/construction"
+				},
+				{
+					"build" : "src/construction/util",
+					"jsonFile" : "directory-src.construction.util-Debug-12248f0adcd795f872cd.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 3,
+					"projectIndex" : 0,
+					"source" : "src/construction/util"
+				},
+				{
+					"build" : "src/data-structure",
+					"jsonFile" : "directory-src.data-structure-Debug-fea8302ed266ff05480f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 0,
+					"source" : "src/data-structure"
+				},
+				{
+					"build" : "src/file",
+					"jsonFile" : "directory-src.file-Debug-f0fd2899b23475a47cb2.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 0,
+					"source" : "src/file"
+				},
+				{
+					"build" : "src/evaluate",
+					"jsonFile" : "directory-src.evaluate-Debug-0ebb3ca137eb058109b1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.22"
+					},
+					"parentIndex" : 2,
+					"projectIndex" : 0,
+					"source" : "src/evaluate"
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"childIndexes" : 
+					[
+						1
+					],
+					"directoryIndexes" : 
+					[
+						0,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7
+					],
+					"name" : "graph-search",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				},
+				{
+					"directoryIndexes" : 
+					[
+						1
+					],
+					"name" : "hnswlib",
+					"parentIndex" : 0
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 2,
+					"id" : "compare_rawMMR_With_Dhnsw::@145eef247bfb46b6828c",
+					"jsonFile" : "target-compare_rawMMR_With_Dhnsw-Debug-67f229835eb1af8e05ed.json",
+					"name" : "compare_rawMMR_With_Dhnsw",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "graph-search::@145eef247bfb46b6828c",
+					"jsonFile" : "target-graph-search-Debug-7de160ad0d8d0ba6c841.json",
+					"name" : "graph-search",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/xiaowentao/WorkSpace/training-plan/dockerimages/graph-search/cmake-build-debug",
+		"source" : "/home/xiaowentao/WorkSpace/training-plan/dockerimages/graph-search"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}

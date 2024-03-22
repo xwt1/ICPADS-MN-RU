@@ -1,0 +1,2 @@
+nohup: ignoring input
+mmr_score is: -0.245226

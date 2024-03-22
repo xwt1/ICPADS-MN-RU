@@ -1,0 +1,3 @@
+nohup: ignoring input
+开始生成索引
+索引生成完成

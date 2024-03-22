@@ -4,5 +4,6 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/D-hnswlib" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/hnswlib" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/external/nndescent" vcs="Git" />
   </component>
 </project>
