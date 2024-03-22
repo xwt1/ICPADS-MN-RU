@@ -18,10 +18,10 @@ if(NOT MLPACK_FOUND)
     message(FATAL_ERROR "MLPACK not found. Please run: apt-get install libmlpack-dev")
 endif()
 
-# 包括HNSWlib目录
+# 包括HNSWlib目录与NN-Decent
 #add_subdirectory(external/hnswlib)
 add_subdirectory(external/D-hnswlib)
-
+include_directories(external/nndescent/include)
 
 # 添加子目录，这会创建graph-search目标
 add_subdirectory(src)
@@ -31,10 +31,17 @@ if(OpenMP_CXX_FOUND)
     # 添加OpenMP编译和链接选项到graph-search目标
     target_compile_options(graph-search PRIVATE ${OpenMP_CXX_FLAGS})
     target_link_libraries(graph-search PRIVATE OpenMP::OpenMP_CXX)
+
+    # 添加OpenMP编译和链接选项到graph-search目标
+    target_compile_options(compare_rawMMR_With_Dhnsw PRIVATE ${OpenMP_CXX_FLAGS})
+    target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE OpenMP::OpenMP_CXX)
 endif()
 
 # 链接MLPACK库到graph-search目标
 target_link_libraries(graph-search PRIVATE mlpack)
+target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE mlpack)
 
 # 链接HNSWlib库到您的应用程序
 target_link_libraries(graph-search PRIVATE hnswlib)
+target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE hnswlib)
+

@@ -11,6 +11,7 @@
 #include <mlpack/core.hpp>
 #include <mlpack/methods/dbscan/dbscan.hpp>
 #include <mlpack/methods/kmeans/kmeans.hpp>
+#include <nndescent.hpp>
 
 #include "point.h"
 #include "node.h"
@@ -18,7 +19,19 @@
 
 namespace Graph{
     using namespace util;
+    struct EuclideanDistance {
+        typedef double value_type;
 
+        double operator()(const std::vector<double>& a, const std::vector<double>& b) const {
+            assert(a.size() == b.size());
+            double sum = 0.0;
+            for (size_t i = 0; i < a.size(); ++i) {
+                double diff = a[i] - b[i];
+                sum += diff * diff;
+            }
+            return -std::sqrt(sum); // Negated to use distance as a similarity measure (lower distance means higher similarity)
+        }
+    };
     class BaseGraphCluster{
     public:
         BaseGraphCluster();
@@ -43,6 +56,15 @@ namespace Graph{
         std::vector <BaseGraphCluster> base_graph_cluster_;
     };
 
+    template <class dist_t>
+    class DiversityNNDecentBaseGraph{
+    public:
+        DiversityNNDecentBaseGraph();
+        DiversityNNDecentBaseGraph(nng::NNDescent<std::vector<dist_t>, EuclideanDistance>){
+
+        }
+
+    };
 
 }
 

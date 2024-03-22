@@ -1,0 +1,67 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"external/D-hnswlib/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 19,
+				"parent" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 25,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "include",
+			"paths" : 
+			[
+				"external/D-hnswlib/hnswlib"
+			],
+			"type" : "directory"
+		},
+		{
+			"backtrace" : 2,
+			"component" : "Unspecified",
+			"destination" : "lib/cmake/hnswlib",
+			"exportName" : "hnswlibTargets",
+			"exportTargets" : 
+			[
+				{
+					"id" : "hnswlib::@3ca33a76efc4664713b0",
+					"index" : 0
+				}
+			],
+			"paths" : 
+			[
+				"external/D-hnswlib/CMakeFiles/Export/813ed3fde11e767224394d5343264af8/hnswlibConfig.cmake"
+			],
+			"type" : "export"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "external/D-hnswlib",
+		"source" : "external/D-hnswlib"
+	}
+}
