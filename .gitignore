@@ -1,2 +1,4 @@
-./external/data/*.bin
-./external/data/*.csv
+./data/*.bin
+./data/*.csv
+./cmake-build-debug
+./cmake-build-debug_prime
