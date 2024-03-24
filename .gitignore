@@ -3,3 +3,8 @@
 ./cmake-build-debug
 ./cmake-build-debug_prime
 ./data/hnswindex.bin
+.idea/
+.vscode/
+.vs/
+**.DS_Store
+*.pyc
