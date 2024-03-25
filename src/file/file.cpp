@@ -4,6 +4,19 @@
 
 #include "file/file.h"
 
+void WriteOpt::WriteIndexLogFile(const std::string log_info_data_path,const std::string &data_file_path,const std::string &index_file_path,const int &dim, const int &vector_num){
+    std::vector <std::vector<std::string>> info;
+    std::vector<std::string> tmp = {"index_file_path",index_file_path};
+    info.push_back(tmp);
+    tmp = {"data_file_path",data_file_path};
+    info.push_back(tmp);
+    tmp = {"dim",std::to_string(dim)};
+    info.push_back(tmp);
+    tmp = {"vector_num",std::to_string(vector_num)};
+    info.push_back(tmp);
+    WriteOpt::WriteCSVFile<std::string>(info,log_info_data_path);
+}
+
 
 template<class T>
 void WriteOpt::WriteCSVFile(const std::vector<std::vector<T> >& data,const std::string & filePath) {
