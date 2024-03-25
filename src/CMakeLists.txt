@@ -38,3 +38,4 @@ list(APPEND SOURCE_FILES ${EVALUATE_SOURCES})
 # 添加可执行文件，包括源文件和头文件
 add_executable(graph-search ${SOURCE_FILES} main.cpp)
 add_executable(compare_rawMMR_With_Dhnsw ${SOURCE_FILES} ./test/compare_rawMMR_With_Dhnsw.cpp)
+add_executable(generate_index ${SOURCE_FILES} ./test/generate_index.cpp)

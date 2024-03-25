@@ -1,10 +1,15 @@
-data/*.bin
 data/*.csv
+data/**/*.bin
+log/
 cmake-build-debug/
 cmake-build-debug_prime/
+cmake*/
 data/hnswindex.bin
 .idea/
 .vscode/
 .vs/
 **.DS_Store
 *.pyc
+**/*.fvecs
+**/*.bvecs
+**/*.ivecs
