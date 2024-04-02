@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.22)
 project(graph-search VERSION 1.0)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+#SET(CMAKE_C_COMPILER "/usr/bin/gcc")
+#SET(CMAKE_CXX_COMPILER "/usr/bin/g++")
+
 # 定义一个宏，将项目根目录的路径传递给C++代码
 add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}")
 
@@ -31,22 +37,39 @@ if(OpenMP_CXX_FOUND)
     # 添加OpenMP编译和链接选项到graph-search目标
     target_compile_options(graph-search PRIVATE ${OpenMP_CXX_FLAGS})
     target_link_libraries(graph-search PRIVATE OpenMP::OpenMP_CXX)
+    target_link_options(graph-search PRIVATE ${OpenMP_CXX_FLAGS})
 
     # 添加OpenMP编译和链接选项到graph-search目标
     target_compile_options(compare_rawMMR_With_Dhnsw PRIVATE ${OpenMP_CXX_FLAGS})
     target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE OpenMP::OpenMP_CXX)
+    target_link_options(compare_rawMMR_With_Dhnsw PRIVATE ${OpenMP_CXX_FLAGS})
 
     # 添加OpenMP编译和链接选项到graph-search目标
     target_compile_options(generate_index PRIVATE ${OpenMP_CXX_FLAGS})
     target_link_libraries(generate_index PRIVATE OpenMP::OpenMP_CXX)
+    target_link_options(generate_index PRIVATE ${OpenMP_CXX_FLAGS})
+
+    # 添加OpenMP编译和链接选项到graph-search目标
+    target_compile_options(compare_rawMMR_with_Dhnsw_in_ip PRIVATE ${OpenMP_CXX_FLAGS})
+    target_link_libraries(compare_rawMMR_with_Dhnsw_in_ip PRIVATE OpenMP::OpenMP_CXX)
+    target_link_options(compare_rawMMR_with_Dhnsw_in_ip PRIVATE ${OpenMP_CXX_FLAGS})
+
+    target_compile_options(generate_index_ip PRIVATE ${OpenMP_CXX_FLAGS})
+    target_link_libraries(generate_index_ip PRIVATE OpenMP::OpenMP_CXX)
+    target_link_options(generate_index_ip PRIVATE ${OpenMP_CXX_FLAGS})
+
 endif()
 
 # 链接MLPACK库到graph-search目标
 target_link_libraries(graph-search PRIVATE mlpack)
 target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE mlpack)
 target_link_libraries(generate_index PRIVATE mlpack)
+target_link_libraries(compare_rawMMR_with_Dhnsw_in_ip PRIVATE mlpack)
+target_link_libraries(generate_index_ip PRIVATE mlpack)
 
 # 链接HNSWlib库到您的应用程序
 target_link_libraries(graph-search PRIVATE hnswlib)
 target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE hnswlib)
 target_link_libraries(generate_index PRIVATE hnswlib)
+target_link_libraries(compare_rawMMR_with_Dhnsw_in_ip PRIVATE hnswlib)
+target_link_libraries(generate_index_ip PRIVATE hnswlib)
