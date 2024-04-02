@@ -48,7 +48,7 @@ void query_mutiple_time(int k,int dim,int max_elements, std::string data_file_pa
 //            }
 //            std::cout<<std::endl;
 //        }
-        Dhnsw_mmr_score += Evaluate::evaluateWithMMR<float>(ans,q_point,0.8);
+        Dhnsw_mmr_score += Evaluate::evaluateWithMMR<float>(ans,q_point,0.8,Evaluate::distance);
     }
     for(int i = start_index; i < start_index+times; i++){
 //        计算raw
@@ -92,7 +92,7 @@ void query_mutiple_time(int k,int dim,int max_elements, std::string data_file_pa
         }
 
         raw_mmr_duration += duration_cast<microseconds>(stop - start); // 计算持续时间
-        raw_mmr_score += Evaluate::evaluateWithMMR<float>(result_ans,q_point,0.8);
+        raw_mmr_score += Evaluate::evaluateWithMMR<float>(result_ans,q_point,0.8,Evaluate::distance);
     }
 
 
@@ -155,7 +155,7 @@ void query_sift(int k,int dim,int base_max_elements,int query_max_elements, std:
 //            }
 //            std::cout<<std::endl;
 //        }
-            Dhnsw_mmr_score += Evaluate::evaluateWithMMR<float>(ans,q_point,0.8);
+            Dhnsw_mmr_score += Evaluate::evaluateWithMMR<float>(ans,q_point,0.8,Evaluate::distance);
         }
         for(int i = 0 ; i < totalVectors; i++){
             //        计算raw
@@ -199,7 +199,7 @@ void query_sift(int k,int dim,int base_max_elements,int query_max_elements, std:
 //            }
 
             raw_mmr_duration += duration_cast<microseconds>(stop - start); // 计算持续时间
-            raw_mmr_score += Evaluate::evaluateWithMMR<float>(result_ans,q_point,0.8);
+            raw_mmr_score += Evaluate::evaluateWithMMR<float>(result_ans,q_point,0.8,Evaluate::distance);
         }
         std::cout << "Time taken by raw: "
                   << raw_mmr_duration.count() << " microseconds" << std::endl;
@@ -211,6 +211,9 @@ void query_sift(int k,int dim,int base_max_elements,int query_max_elements, std:
 
         std::cout<<"Dhnsw_mmr_score is: "<<Dhnsw_mmr_score / (float)(totalVectors)<<std::endl;
     }
+    delete[] base_data;
+    delete[] query_data;
+    delete alg_hnsw;
 }
 
 int main(int argc, char* argv[]){
@@ -248,7 +251,7 @@ int main(int argc, char* argv[]){
         return 1;
     }
 
-    query_sift(20,dim,base_max_elements,query_max_elements,query_vector_file,base_vector_file,index_file);
+    query_sift(100,dim,base_max_elements,query_max_elements,query_vector_file,base_vector_file,index_file);
 //    query_mutiple_time(2,dim,max_elements,data_file_path,114514,1);
     return 0;
 }

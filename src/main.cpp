@@ -76,7 +76,7 @@ void query_mutiple_time(int k,int dim,int max_elements, std::string data_file_pa
             }
             std::cout<<std::endl;
         }
-        mmr_score += Evaluate::evaluateWithMMR<float>(ans,q_point,0.8);
+        mmr_score += Evaluate::evaluateWithMMR<float>(ans,q_point,0.8,Evaluate::distance);
     }
 
 

@@ -7,19 +7,28 @@
 
 
 template<class dist_t>
-dist_t Evaluate::evaluateWithMMR(const std::vector <std::vector <dist_t> > &v,const std::vector <dist_t> q,dist_t lambda){
+dist_t Evaluate::evaluateWithMMR(const std::vector <std::vector <dist_t> > &v,const std::vector <dist_t> q,dist_t lambda,Metric metric){
     auto sum  = (dist_t) 0;
     size_t siz = v.size();
     for(auto i = 0 ; i < siz; i++){
         size_t dim1 = v[i].size();
-        auto count_dis = [&](){
-            dist_t temp = 0;
-            for(auto k1 = 0; k1<dim1;k1++){
-                temp+= ((v[i][k1])-(q[k1]))*((v[i][k1])-(q[k1]));
+        switch (metric) {
+            case distance:{
+                sum += calculateDistance(v[i],q,dim1);
             }
-            sum = sum + sqrt(temp);
-        };
-        count_dis();
+            break;
+            case ip:{
+                sum += calculateDistanceWithDotProduct(v[i],q,dim1);
+            }break;
+        }
+//        auto count_dis = [&](){
+//            dist_t temp = 0;
+//            for(auto k1 = 0; k1<dim1;k1++){
+//                temp+= ((v[i][k1])-(q[k1]))*((v[i][k1])-(q[k1]));
+//            }
+//            sum = sum + sqrt(temp);
+//        };
+//        count_dis();
     }
     sum = - ((sum * lambda)/siz);
     dist_t mx = -std::numeric_limits<dist_t>::max();
@@ -47,5 +56,5 @@ dist_t Evaluate::evaluateWithMMR(const std::vector <std::vector <dist_t> > &v,co
 }
 
 // 显式实例化
-template float Evaluate::evaluateWithMMR<float>(const std::vector<std::vector<float>>&, const std::vector <float> ,float);
+template float Evaluate::evaluateWithMMR<float>(const std::vector<std::vector<float>>&, const std::vector <float> ,float,Metric);
 

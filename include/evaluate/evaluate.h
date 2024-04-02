@@ -12,11 +12,15 @@
 
 class Evaluate{
 public:
+    enum Metric{
+        distance,
+        ip
+    };
     template<class dist_t>
-    static dist_t evaluateWithMMR(const std::vector <std::vector <dist_t> > &v,const std::vector <dist_t> q,dist_t lambda);
+    static dist_t evaluateWithMMR(const std::vector <std::vector <dist_t> > &v,const std::vector <dist_t> q,dist_t lambda,Metric metric=distance);
 
     template<class dist_t>
-    static std::vector<std::vector<dist_t>> obtainRawMMR(const std::vector <std::vector <dist_t> > &v,const std::vector <dist_t> q,dist_t lambda, size_t k){
+    static std::vector<std::vector<dist_t>> obtainRawMMR(const std::vector <std::vector <dist_t> > &v,const std::vector <dist_t> q,dist_t lambda, size_t k,Metric metric = distance){
         size_t siz = v.size();
         size_t dim = q.size();
         std::vector<std::vector<dist_t>> result;
@@ -32,11 +36,20 @@ public:
         std::vector <dist_t> v_q_dist(siz,0);
         std::vector <bool> visited(siz,false);
         for(size_t i = 0; i < siz ; i++){
-            dist_t sum_sq_diff = 0; // 初始化累加器
-            for(size_t j = 0; j<dim ;j++){
-                sum_sq_diff += (v[i][j] - q[j])*(v[i][j] - q[j]); // 累加差的平方
+//            dist_t sum_sq_diff = 0; // 初始化累加器
+//            for(size_t j = 0; j<dim ;j++){
+//                sum_sq_diff += (v[i][j] - q[j])*(v[i][j] - q[j]); // 累加差的平方
+//            }
+//            v_q_dist[i] = sqrt(sum_sq_diff); // 对累加的差的平方和取平方根
+            switch (metric) {
+                case distance:{
+                    v_q_dist[i] += calculateDistance(v[i],q,dim);
+                }break;
+                case ip:{
+                    v_q_dist[i] += calculateDistanceWithDotProduct(v[i],q,dim);
+                }break;
             }
-            v_q_dist[i] = sqrt(sum_sq_diff); // 对累加的差的平方和取平方根
+
             if(mn > v_q_dist[i]){
                 mn = v_q_dist[i];
                 index = i;
@@ -103,6 +116,15 @@ private:
             dist_sq_sum += (a[j] - b[j]) * (a[j] - b[j]);
         }
         return sqrt(dist_sq_sum);
+    }
+
+    template<class dist_t>
+    static dist_t calculateDistanceWithDotProduct(const std::vector<dist_t>& a, const std::vector<dist_t>& b, size_t dim) {
+        dist_t dot_product = 0;
+        for (size_t j = 0; j < dim; ++j) {
+            dot_product += -(a[j] * b[j]);
+        }
+        return dot_product;
     }
 };
 
