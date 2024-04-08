@@ -10,8 +10,8 @@
 #include "evaluate/evaluate.h"
 
 void query_sift_ip(int k,int dim,int base_max_elements,int query_max_elements, std::string query_vector_file,std::string base_vector_file,std::string index_file){
-    hnswlib::L2Space InnerProductSpace(dim);
-    auto alg_hnsw = new hnswlib::HierarchicalNSW<float>(&InnerProductSpace, index_file,false);
+    hnswlib::InnerProductSpace InnerProductSpace(dim);
+    auto alg_hnsw = new hnswlib::DHierarchicalNSW<float>(&InnerProductSpace, index_file,hnswlib::ip,hnswlib::ip,false);
 
     int base_total_vectors = -1;
     float* base_data = new float[dim*base_max_elements];
@@ -21,9 +21,13 @@ void query_sift_ip(int k,int dim,int base_max_elements,int query_max_elements, s
     float* query_data = new float[dim * query_max_elements];
     int totalVectors = -1;
     if(ReadOpt::ReadFvecsFileIntoArray<float>(query_vector_file,query_data,totalVectors,dim,query_max_elements)){
-        using namespace std::chrono; // 使用chrono命名空间，简化代码
+        using namespace std::chrono;
         float raw_mmr_score = 0;
         float Dhnsw_mmr_score = 0;
+        float raw_mmr_ILAD_score = 0;
+        float Dhnsw_mmr_ILAD_score = 0;
+        float raw_mmr_ILMD_score = 0;
+        float Dhnsw_mmr_ILMD_score = 0;
         auto raw_mmr_duration = std::chrono::microseconds(0);
         auto Dhnsw_mmr_duration = std::chrono::microseconds(0);
         for(int i = 0 ; i < totalVectors; i++){
@@ -50,19 +54,21 @@ void query_sift_ip(int k,int dim,int base_max_elements,int query_max_elements, s
                 ans.push_back(temp);
                 result.pop();
             }
-//        std::cout<<ans.size()<<std::endl;
-//        for(auto i:ans){
-//            for(auto j:i){
-//                std::cout<<j<<" ";
+//            std::cout<<ans.size()<<std::endl;
+//            for(auto i:ans){
+//                for(auto j:i){
+//                    std::cout<<j<<" ";
+//                }
+//                std::cout<<std::endl;
 //            }
-//            std::cout<<std::endl;
-//        }
-            Dhnsw_mmr_score += Evaluate::evaluateWithMMR<float>(ans,q_point,0.8,Evaluate::distance);
+            Dhnsw_mmr_score += Evaluate::evaluateWithMMR<float>(ans,q_point,0.8,hnswlib::ip,hnswlib::ip);
+            Dhnsw_mmr_ILAD_score += Evaluate::evaluateWithILAD<float>(ans,hnswlib::distance);
+            Dhnsw_mmr_ILMD_score += Evaluate::evaluateWithILMD<float>(ans,hnswlib::distance);
         }
         for(int i = 0 ; i < totalVectors; i++){
             //        计算raw
             auto start = high_resolution_clock::now(); // 开始时间
-            std::priority_queue<std::pair<float, hnswlib::labeltype>> result = alg_hnsw->searchKnn(query_data+i*dim, k*10);
+            std::priority_queue<std::pair<float, hnswlib::labeltype>> result = alg_hnsw->searchKnn(query_data+i*dim, k);
             auto stop = high_resolution_clock::now(); // 结束时间
             raw_mmr_duration += duration_cast<microseconds>(stop - start); // 计算持续时间
             std::vector <std::vector <float>> result1;
@@ -89,7 +95,7 @@ void query_sift_ip(int k,int dim,int base_max_elements,int query_max_elements, s
                 q_point.push_back(query_data[i * dim + j]);
             }
             start = high_resolution_clock::now(); // 开始时间
-            auto result_ans = Evaluate::obtainRawMMR<float>(result1,q_point,0.8,k,Evaluate::ip);
+            auto result_ans = Evaluate::obtainRawMMR<float>(result1,q_point,0.8,k,hnswlib::ip,hnswlib::ip);
             stop = high_resolution_clock::now(); // 结束时间
 
 //            std::cout<<result_ans.size()<<std::endl;
@@ -101,7 +107,9 @@ void query_sift_ip(int k,int dim,int base_max_elements,int query_max_elements, s
 //            }
 
             raw_mmr_duration += duration_cast<microseconds>(stop - start); // 计算持续时间
-            raw_mmr_score += Evaluate::evaluateWithMMR<float>(result_ans,q_point,0.8,Evaluate::distance);
+            raw_mmr_score += Evaluate::evaluateWithMMR<float>(result_ans,q_point,0.8,hnswlib::ip,hnswlib::ip);
+            raw_mmr_ILAD_score += Evaluate::evaluateWithILAD<float>(result_ans,hnswlib::distance);
+            raw_mmr_ILMD_score += Evaluate::evaluateWithILMD<float>(result_ans,hnswlib::distance);
         }
         std::cout << "Time taken by raw: "
                   << raw_mmr_duration.count() << " microseconds" << std::endl;
@@ -110,8 +118,12 @@ void query_sift_ip(int k,int dim,int base_max_elements,int query_max_elements, s
                   << Dhnsw_mmr_duration.count() << " microseconds" << std::endl;
 
         std::cout<<"raw_mmr_score is: "<<raw_mmr_score / (float)(totalVectors)<<std::endl;
+        std::cout<<"raw_mmr_ILAD_score is: "<<raw_mmr_ILAD_score / (float)(totalVectors)<<std::endl;
+        std::cout<<"raw_mmr_ILMD_score is: "<<raw_mmr_ILMD_score / (float)(totalVectors)<<std::endl;
 
         std::cout<<"Dhnsw_mmr_score is: "<<Dhnsw_mmr_score / (float)(totalVectors)<<std::endl;
+        std::cout<<"Dhnsw_mmr_ILAD_score is: "<<Dhnsw_mmr_ILAD_score / (float)(totalVectors)<<std::endl;
+        std::cout<<"Dhnsw_mmr_ILMD_score is: "<<Dhnsw_mmr_ILMD_score / (float)(totalVectors)<<std::endl;
     }
     delete[] base_data;
     delete[] query_data;

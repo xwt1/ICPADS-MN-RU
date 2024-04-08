@@ -1,0 +1,5 @@
+X,Y,
+index_file_path,/home/xiaowentao/WorkSpace/training-plan/dockerimages/graph-search/data/sift/index/sift_index_ip.bin,
+data_file_path,/home/xiaowentao/WorkSpace/training-plan/dockerimages/graph-search/data/sift/sift_base.fvecs,
+dim,128,
+vector_num,1000000,

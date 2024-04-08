@@ -18,7 +18,7 @@ void generateIpIndexFromBvec(int dim,
                            std::string log_file_path,
                            int M=16,
                            int ef_construction=200){
-    hnswlib::L2Space InnerProductSpace(dim);
+    hnswlib::InnerProductSpace InnerProductSpace(dim);
     hnswlib::HierarchicalNSW<float>* alg_hnsw = new hnswlib::HierarchicalNSW<float>(&InnerProductSpace, max_elements, M, ef_construction);
     float* data = new float[dim * max_elements];
     int totalVectors = 0;
