@@ -14,10 +14,7 @@
 namespace hnswlib {
 typedef unsigned int tableint;
 typedef unsigned int linklistsizeint;
-enum diversity_type{
-    none,
-    MMR
-};
+
 
 template<typename dist_t>
 class HierarchicalNSW : public AlgorithmInterface<dist_t> {
@@ -1359,63 +1356,63 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         return result;
     }
 
-    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst>
-    diversityAwareSearchKnn(const void *query_data, size_t k, BaseFilterFunctor* isIdAllowed = nullptr) const {
-        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates;
-        if (cur_element_count == 0) return top_candidates;
-
-//        currObj是当前搜到的入口点的id,一开始初始化成max_level层的一个点
-        tableint currObj = enterpoint_node_;
-//        curdist代表当前找到的每一层的入口点与query点的距离,在达到最底层之前,需要找到一个离query点最近的点
-        dist_t curdist = fstdistfunc_(query_data, getDataByInternalId(enterpoint_node_), dist_func_param_);
-
-        for (int level = maxlevel_; level > 0; level--) {
-            bool changed = true;
-            while (changed) {
-                changed = false;
-                unsigned int *data;
-
-//                data存储当前currObj在该层的所有邻居
-                data = (unsigned int *) get_linklist(currObj, level);
-                int size = getListCount(data);
-
-//                metric_hops和metric_distance_computations用于衡量HNSW的性能
-                metric_hops++;
-                metric_distance_computations+=size;
-
-                tableint *datal = (tableint *) (data + 1);
-                for (int i = 0; i < size; i++) {
-                    tableint cand = datal[i];
-                    if (cand < 0 || cand > max_elements_)
-                        throw std::runtime_error("cand error");
-//                    看来fstdistfunc_是距离评判函数,后期可以更改这个以达成MMR的目的
-                    dist_t d = fstdistfunc_(query_data, getDataByInternalId(cand), dist_func_param_);
-
-                    if (d < curdist) {
-                        curdist = d;
-                        currObj = cand;
-                        changed = true;
-                    }
-                }
-            }
-        }
-
-
-        bool bare_bone_search = !num_deleted_ && !isIdAllowed;
-        if (bare_bone_search) {
-            top_candidates = searchBaseLayerST<true>(
-                    currObj, query_data, std::max(ef_, k), isIdAllowed);
-        } else {
-            top_candidates = searchBaseLayerST<false>(
-                    currObj, query_data, std::max(ef_, k), isIdAllowed);
-        }
-
-        while (top_candidates.size() > k) {
-            top_candidates.pop();
-        }
-//        在这里插入代码,更新top_candidates
-        return top_candidates;
-    }
+//    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst>
+//    diversityAwareSearchKnn(const void *query_data, size_t k, BaseFilterFunctor* isIdAllowed = nullptr) const {
+//        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> top_candidates;
+//        if (cur_element_count == 0) return top_candidates;
+//
+////        currObj是当前搜到的入口点的id,一开始初始化成max_level层的一个点
+//        tableint currObj = enterpoint_node_;
+////        curdist代表当前找到的每一层的入口点与query点的距离,在达到最底层之前,需要找到一个离query点最近的点
+//        dist_t curdist = fstdistfunc_(query_data, getDataByInternalId(enterpoint_node_), dist_func_param_);
+//
+//        for (int level = maxlevel_; level > 0; level--) {
+//            bool changed = true;
+//            while (changed) {
+//                changed = false;
+//                unsigned int *data;
+//
+////                data存储当前currObj在该层的所有邻居
+//                data = (unsigned int *) get_linklist(currObj, level);
+//                int size = getListCount(data);
+//
+////                metric_hops和metric_distance_computations用于衡量HNSW的性能
+//                metric_hops++;
+//                metric_distance_computations+=size;
+//
+//                tableint *datal = (tableint *) (data + 1);
+//                for (int i = 0; i < size; i++) {
+//                    tableint cand = datal[i];
+//                    if (cand < 0 || cand > max_elements_)
+//                        throw std::runtime_error("cand error");
+////                    看来fstdistfunc_是距离评判函数,后期可以更改这个以达成MMR的目的
+//                    dist_t d = fstdistfunc_(query_data, getDataByInternalId(cand), dist_func_param_);
+//
+//                    if (d < curdist) {
+//                        curdist = d;
+//                        currObj = cand;
+//                        changed = true;
+//                    }
+//                }
+//            }
+//        }
+//
+//
+//        bool bare_bone_search = !num_deleted_ && !isIdAllowed;
+//        if (bare_bone_search) {
+//            top_candidates = searchBaseLayerST<true>(
+//                    currObj, query_data, std::max(ef_, k), isIdAllowed);
+//        } else {
+//            top_candidates = searchBaseLayerST<false>(
+//                    currObj, query_data, std::max(ef_, k), isIdAllowed);
+//        }
+//
+//        while (top_candidates.size() > k) {
+//            top_candidates.pop();
+//        }
+////        在这里插入代码,更新top_candidates
+//        return top_candidates;
+//    }
 
     std::vector<std::pair<dist_t, labeltype >>
     searchStopConditionClosest(
@@ -1502,436 +1499,174 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         std::cout << "integrity ok, checked " << connections_checked << " connections\n";
     }
 
-    /*
-     * count the diversity with Maximal
-     *      top_candidate_with_mmr:  the pointer to result candidate
-     *      result_size: top_candidate_with_mmr size
-     *      d_i: the element in candidate_set to calculate diversity with element in eps_for_diversity_search
-     */
-    auto countDiversityWithMax(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
-                                 std::pair<dist_t, tableint> &d_i)const -> dist_t{
-        char* d_i_data = getDataByInternalId(d_i.second);
-        dist_t mx = -std::numeric_limits<dist_t>::max();
-        for(size_t  i = 0 ;i< eps_for_diversity_search.second; i++){
-            char *top_element = getDataByInternalId((eps_for_diversity_search.first+i)->second);
-            dist_t dist = fstdistfunc_(d_i_data, top_element, dist_func_param_);
-            mx = std::max(mx, dist);
-        }
-        return mx;
-    }
-
-    /*
-     * count the diversity with Centroid
-     *      centroid: center of the eps_for_diversity_search
-     *      d_i: the element in candidate_set to calculate diversity with element in eps_for_diversity_search
-     */
-    auto countDiverstyWithCentroid(std::pair<dist_t, tableint> &centroid,
-                                   std::pair<dist_t, tableint> &d_i)const ->dist_t{
-        char* d_i_data = getDataByInternalId(d_i.second);
-        char* centroid_data = getDataByInternalId(centroid.second);
-        dist_t dist = fstdistfunc_(d_i_data, centroid_data, dist_func_param_);
-        return dist;
-    }
-
-
-    void clearCandidateSet(std::list <std::pair<dist_t, tableint>> &candidate_set,
-                           VisitedList * vl,size_t k) const{
-//        size_t can_size = candidate_set.size();
+//    /*
+//     * count the diversity with Maximal
+//     *      top_candidate_with_mmr:  the pointer to result candidate
+//     *      result_size: top_candidate_with_mmr size
+//     *      d_i: the element in candidate_set to calculate diversity with element in eps_for_diversity_search
+//     */
+//    auto countDiversityWithMax(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
+//                                 std::pair<dist_t, tableint> &d_i)const -> dist_t{
+//        char* d_i_data = getDataByInternalId(d_i.second);
+//        dist_t mx = -std::numeric_limits<dist_t>::max();
+//        for(size_t  i = 0 ;i< eps_for_diversity_search.second; i++){
+//            char *top_element = getDataByInternalId((eps_for_diversity_search.first+i)->second);
+//            dist_t dist = L2Sqr(d_i_data, top_element, dist_func_param_);
+//            mx = std::max(mx, dist);
+//        }
+//        return mx;
+//    }
+//
+//    /*
+//     * count the diversity with Centroid
+//     *      centroid: center of the eps_for_diversity_search
+//     *      d_i: the element in candidate_set to calculate diversity with element in eps_for_diversity_search
+//     */
+//    auto countDiverstyWithCentroid(std::pair<dist_t, tableint> &centroid,
+//                                   std::pair<dist_t, tableint> &d_i)const ->dist_t{
+//        char* d_i_data = getDataByInternalId(d_i.second);
+//        char* centroid_data = getDataByInternalId(centroid.second);
+//        dist_t dist = fstdistfunc_(d_i_data, centroid_data, dist_func_param_);
+//        return dist;
+//    }
+//
+//
+//    void clearCandidateSet(std::list <std::pair<dist_t, tableint>> &candidate_set,
+//                           VisitedList * vl,size_t k) const{
+////        size_t can_size = candidate_set.size();
+////        vl_type *visited_array = vl->mass;
+////        vl_type visited_array_tag = vl->curV;
+////        if(candidate_set.size() > k)    candidate_set.resize(k);
+////        std::cout<<1<<std::endl;
+//        if (k < candidate_set.size()) {
+//            auto it = candidate_set.begin();
+//            std::advance(it, k); // 将迭代器移动到第k个元素之后的位置
+//            candidate_set.erase(it, candidate_set.end()); // 删除第k个元素之后的所有元素
+//        }
+//
+////        for (auto it = candidate_set.begin(); it != candidate_set.end(); ) {
+////            if (visited_array[it->second] == visited_array_tag) {
+////                it = candidate_set.erase(it);
+////            } else {
+////                ++it;
+////            }
+////        }
+//
+////        std::vector <std::pair<dist_t, tableint>> temp;
+////        temp.reserve(candidate_set.size());
+////        for(size_t i = 0; i < can_size; i++){
+////            if(candidate_set[i].second != visited_array_tag){
+////                temp.emplace_back(candidate_set[i]);
+////            }
+////        }
+////        candidate_set.clear();
+////        for(auto &i : temp){
+////            candidate_set.emplace_back(i);
+////        }
+//    }
+//
+//    /*
+//     * count the Maximal marginal Relevance(MMR)
+//     */
+//    auto countMMR(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
+//                  std::pair<dist_t, tableint> &d_i,
+//                  dist_t lambda,
+//                  bool relevance_metric = distance) const -> dist_t{
+//        switch (relevance_metric) {
+//            case distance:{
+//                return -lambda * d_i.first + (1 - lambda) * countDiversityWithMax(eps_for_diversity_search,d_i);
+//            }break;
+//            case ip:{
+//                return lambda * d_i.first + (1 - lambda) * countDiversityWithMax(eps_for_diversity_search,d_i);
+//            }break;
+//        }
+//
+//    }
+//
+////    auto count
+//
+//    /*
+//     * count the Centroid Distance Maximization Enhanced MMR(CDM-EMMR)(形心距离最大化多样性增强MMR)
+//     */
+//    auto countCDM_EMMR(std::pair<dist_t, tableint> &centroid,
+//                  std::pair<dist_t, tableint> &d_i,
+//                  dist_t lambda){
+//        return -lambda * d_i.first + (1 - lambda) * countDiverstyWithCentroid(centroid,d_i);
+//    }
+//
+//
+//
+//    using high_resolution_clock = std::chrono::high_resolution_clock;
+//    using time_point = std::chrono::time_point<high_resolution_clock>;
+//    using duration = std::chrono::duration<double, std::micro>;
+//
+////    dist_t calculate_dist(){
+////
+////    }
+//
+////    void printEps(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search) const{
+////        std::cout<<"eps vertex id"<<std::endl;
+////        for(int i = 0;i < eps_for_diversity_search.second;i++){
+////            std::cout<<(eps_for_diversity_search.first + i)->second<<" ";
+////        }
+////        std::cout<<std::endl;
+////        std::cout<<"eps last elment vertex neighbour"<<std::endl;
+////        int *neighbor = (int *) get_linklist0((eps_for_diversity_search.first+eps_for_diversity_search.second - 1)->second);
+////        size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
+////        for(size_t j = 1 ; j <= neighbor_size ; j++){
+////            int candidate_id = *(neighbor + j);
+////            std::cout<<candidate_id<<" ";
+////        }
+////        std::cout<<std::endl;
+////    }
+////    void dfs(tableint now,std::vector <bool> &vis,int &count) const{
+////        int *neighbor = (int *) get_linklist0(now);
+////        size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
+////        for(size_t i = 1; i <= neighbor_size; i++){
+////            int nei = *(neighbor + i);
+////            if(!vis[nei]){
+////                vis[nei] = true;
+////                count++;
+////                dfs(nei,vis,count);
+////            }
+////        }
+////    }
+//
+////      使用这个函数时,candidate_set处于上一轮的状态
+//    void chooseElementWithMMR(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
+//                              std::list <std::pair<dist_t, tableint>> &candidate_set,
+//                              const void *data_point,
+//                              dist_t lambda,
+//                              VisitedList * vl,
+//                              relevance_metric relevanceMetric = distance)const{
+////        std::cout<<1234567<<std::endl;
 //        vl_type *visited_array = vl->mass;
 //        vl_type visited_array_tag = vl->curV;
-//        if(candidate_set.size() > k)    candidate_set.resize(k);
-//        std::cout<<1<<std::endl;
-        if (k < candidate_set.size()) {
-            auto it = candidate_set.begin();
-            std::advance(it, k); // 将迭代器移动到第k个元素之后的位置
-            candidate_set.erase(it, candidate_set.end()); // 删除第k个元素之后的所有元素
-        }
-
-//        for (auto it = candidate_set.begin(); it != candidate_set.end(); ) {
-//            if (visited_array[it->second] == visited_array_tag) {
-//                it = candidate_set.erase(it);
-//            } else {
-//                ++it;
-//            }
-//        }
-
-//        std::vector <std::pair<dist_t, tableint>> temp;
-//        temp.reserve(candidate_set.size());
-//        for(size_t i = 0; i < can_size; i++){
-//            if(candidate_set[i].second != visited_array_tag){
-//                temp.emplace_back(candidate_set[i]);
-//            }
-//        }
-//        candidate_set.clear();
-//        for(auto &i : temp){
-//            candidate_set.emplace_back(i);
-//        }
-    }
-
-    /*
-     * count the Maximal marginal Relevance(MMR)
-     */
-    auto countMMR(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
-                  std::pair<dist_t, tableint> &d_i,
-                  dist_t lambda) const -> dist_t{
-        return -lambda * d_i.first + (1 - lambda) * countDiversityWithMax(eps_for_diversity_search,d_i);
-    }
-
-    /*
-     * count the Centroid Distance Maximization Enhanced MMR(CDM-EMMR)(形心距离最大化多样性增强MMR)
-     */
-    auto countCDM_EMMR(std::pair<dist_t, tableint> &centroid,
-                  std::pair<dist_t, tableint> &d_i,
-                  dist_t lambda){
-        return -lambda * d_i.first + (1 - lambda) * countDiverstyWithCentroid(centroid,d_i);
-    }
-
-
-
-    using high_resolution_clock = std::chrono::high_resolution_clock;
-    using time_point = std::chrono::time_point<high_resolution_clock>;
-    using duration = std::chrono::duration<double, std::micro>;
-
-    void printEps(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search) const{
-        std::cout<<"eps vertex id"<<std::endl;
-        for(int i = 0;i < eps_for_diversity_search.second;i++){
-            std::cout<<(eps_for_diversity_search.first + i)->second<<" ";
-        }
-        std::cout<<std::endl;
-        std::cout<<"eps last elment vertex neighbour"<<std::endl;
-        int *neighbor = (int *) get_linklist0((eps_for_diversity_search.first+eps_for_diversity_search.second - 1)->second);
-        size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
-        for(size_t j = 1 ; j <= neighbor_size ; j++){
-            int candidate_id = *(neighbor + j);
-            std::cout<<candidate_id<<" ";
-        }
-        std::cout<<std::endl;
-    }
-    void dfs(tableint now,std::vector <bool> &vis,int &count) const{
-        int *neighbor = (int *) get_linklist0(now);
-        size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
-        for(size_t i = 1; i <= neighbor_size; i++){
-            int nei = *(neighbor + i);
-            if(!vis[nei]){
-                vis[nei] = true;
-                count++;
-                dfs(nei,vis,count);
-            }
-        }
-    }
-
-//      使用这个函数时,candidate_set处于上一轮的状态
-    void chooseElementWithMMR(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
-                              std::list <std::pair<dist_t, tableint>> &candidate_set,
-                              const void *data_point,
-                              dist_t lambda,
-                              VisitedList * vl)const{
-//        std::cout<<1234567<<std::endl;
-        vl_type *visited_array = vl->mass;
-        vl_type visited_array_tag = vl->curV;
-        auto index = candidate_set.begin();
-        dist_t mmr_dist = -std::numeric_limits<dist_t>::max();
-
-        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
-            if(mmr_dist < it->first){
-                mmr_dist = it->first;
-                index = it;
-            }
-        }
-        char *element_mmr = getDataByInternalId(index->second);
-        dist_t element_mmr_dist = fstdistfunc_(data_point, element_mmr, dist_func_param_);
-        std::pair<dist_t, tableint> e_insert = std::make_pair(element_mmr_dist,index->second);
-//        向eps_for_diversity_search添加新点
-        insertEpsForDiversitySearch(eps_for_diversity_search,e_insert);
-//        更新candidate_set
-        candidate_set.erase(index);
-
-
-//        time_point start_time;
-//        start_time = high_resolution_clock::now();
-
-        // 更新原有的candidate_set的点集合,根据刚刚加入eps_for_diversity_search的点更新
-        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
-            char *temp = getDataByInternalId(it->second);
-            dist_t temp_element_dist_with_lambda = (1-lambda) * fstdistfunc_(temp, element_mmr, dist_func_param_);
-//            mmr = -lambda* dist(Q,temp) + (1-lambda) * max(dist(d_i,temp))
-            dist_t temp_query_dist = fstdistfunc_(temp,data_point,dist_func_param_);
-            dist_t res = it->first + lambda*temp_query_dist;    //(1-lambda) * max(dist(d_i,temp)) = mmr+ lambda* dist(Q,temp)
-            if(res < temp_element_dist_with_lambda){
-//              根据MMR,说明需要更新当前结点
-                dist_t new_mmr =  -lambda*temp_query_dist +  temp_element_dist_with_lambda;
-                it->first = new_mmr;
-            }
-        }
-
-//        auto stop_time = high_resolution_clock::now();
-//        candidate_duration_ += stop_time - start_time;
-//        std::cout<<123456789<<std::endl;
-//        加入新邻居,增大可选集合
-//        start_time = high_resolution_clock::now();
-
-
-        int *neighbor = (int *) get_linklist0((eps_for_diversity_search.first+eps_for_diversity_search.second - 1)->second);
-        size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
-//        neighbor_size = (neighbor_size > 5)?5:neighbor_size;
-//            遍历每一个邻居
-        for(size_t j = 1 ; j <= neighbor_size ; j++){
-            int candidate_id = *(neighbor + j);
-            if(visited_array[candidate_id] != visited_array_tag){
-                visited_array[candidate_id] = visited_array_tag;
-                char *currObj1 = (getDataByInternalId(candidate_id));
-                dist_t dist = fstdistfunc_(data_point, currObj1, dist_func_param_);
-                std::pair<dist_t, tableint> d_i = std::make_pair(dist,candidate_id);
-                auto new_mmr = countMMR(eps_for_diversity_search,d_i,lambda);
-//                将新邻居装入candidate_set
-                candidate_set.emplace_back(std::make_pair(new_mmr,candidate_id));
-            }
-        }
-
-//        stop_time = high_resolution_clock::now();
-//        neighbour_duration_ += stop_time - start_time;
-    }
-
-    void updateCurrentCentroid(std::vector <std::vector<dist_t>> &centroid
-                               ){
-
-    }
-
-    void chooseElementWithCDM_EMMR(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
-                                   std::list <std::pair<dist_t, tableint>> &candidate_set,
-                                   std::vector <std::vector<dist_t>> &centroid,
-                                   const void *data_point,
-                                   dist_t lambda,
-                                   VisitedList * vl,
-                                   duration  &candidate_duration_,
-                                   duration  &neighbour_duration_)const{
-//        1.从candidate_set中挑选一个最大的具有最大CDM_EMMR的点
-        vl_type *visited_array = vl->mass;
-        vl_type visited_array_tag = vl->curV;
-        auto index = candidate_set.begin();
-        dist_t mmr_dist = -std::numeric_limits<dist_t>::max();
-
-        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
-            if(mmr_dist < it->first){
-                mmr_dist = it->first;
-                index = it;
-            }
-        }
-        char *element_mmr = getDataByInternalId(index->second);
-        dist_t element_mmr_dist = fstdistfunc_(data_point, element_mmr, dist_func_param_);
-        std::pair<dist_t, tableint> e_insert = std::make_pair(element_mmr_dist,index->second);
-//        向eps_for_diversity_search添加新点
-        insertEpsForDiversitySearch(eps_for_diversity_search,e_insert);
-//        更新candidate_set
-        candidate_set.erase(index);
-
-
-    }
-
-    void insertEpsForDiversitySearch(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
-                                     std::pair<dist_t, tableint> &e) const{
-        *(eps_for_diversity_search.first + eps_for_diversity_search.second) = e;
-        eps_for_diversity_search.second++;
-    }
-
-    void filterTopK(std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
-                    std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
-                    dist_t lambda,
-                    size_t k_1) const{
-//        根据MMR将top_candidates补齐至k_1 (todo)
-
-    }
-    /*
-     * method one to update result with MMR to gain diversity
-     *      top_candidates is the result to be updated
-     *      lambda is a parameter in MMR definition to control the ratio between similarity and diversity
-     *      k_1 is the entry point number for Diversity search,set to 1 by default
-     */
-    std::priority_queue<std::pair<dist_t, labeltype >> updateTopCandidateWithMMR(
-            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
-            const void *data_point,
-            size_t k,
-            dist_t lambda=0.8,
-            size_t k_1 = 1,
-            bool filter=false) const{
-//        在做完相似性搜索后,做进一步的多样性与相似性平衡的搜索来更新上一步的结果集合
-
-//      为了效率,不使用智能指针了
-//        std::shared_ptr<std::pair<dist_t, tableint> > eps_for_diversity_search(new std::pair<dist_t, tableint> [top_candidates.size()],
-//                                                                             [](std::pair<dist_t, tableint>* p) { delete[] p; });
-//      用普通指针记得释放first元素的空间
-        std::pair<std::pair<dist_t, tableint> *, size_t> eps_for_diversity_search = std::make_pair(new std::pair<dist_t, tableint> [k+1],0);
-//        这里candidate_set中每一个元素,first存储的是MMR得分,second存储的是对应点的id
-        std::list <std::pair<dist_t, tableint>> candidate_set;
-        VisitedList * vl = visited_list_pool_->getFreeVisitedList();
-        vl_type *visited_array = vl->mass;
-        vl_type visited_array_tag = vl->curV;
-
-        if(!top_candidates.empty()){
-            auto tops = top_candidates.top();
-            insertEpsForDiversitySearch(eps_for_diversity_search,tops);
-            visited_array[tops.second] = visited_array_tag;
-            top_candidates.pop();
-        }
-//        选取出的k_1个点,最终会被放入top_candidate_with_mmr中
-        if(filter){
-//            如果选择过滤,就会利用MMR从top-K个顶点中选取出k_1个点作为多样性搜索的起始点
-            filterTopK(top_candidates,eps_for_diversity_search,lambda,k_1);
-        }else{
-//            如果不选择过滤,就直接利用top-K个顶点中的前k_1个点作为多样性搜索的起始点
-            while(!top_candidates.empty() && eps_for_diversity_search.second < k_1){
-                auto tops = top_candidates.top();
-                insertEpsForDiversitySearch(eps_for_diversity_search,tops);
-                visited_array[tops.second] = visited_array_tag;
-                top_candidates.pop();
-            }
-        }
-        while(!top_candidates.empty())  top_candidates.pop();
-
-//        std::cout<<123<<std::endl;
-
-//        现在eps_for_diversity_search装着MMR公式中地S(已选择点)集合,现在访问每一个点的邻居点初始化candidate_set
-        for(size_t i = 0;i< eps_for_diversity_search.second ; i++){
-            int *neighbor = (int *) get_linklist0((eps_for_diversity_search.first+i)->second);
-            size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
-//            遍历每一个邻居
-            for(size_t j = 1 ; j <= neighbor_size ; j++){
-                int candidate_id = *(neighbor + j);
-                if(visited_array[candidate_id] != visited_array_tag){
-                    visited_array[candidate_id] = visited_array_tag;
-                    char *currObj1 = (getDataByInternalId(candidate_id));
-                    dist_t dist = fstdistfunc_(data_point, currObj1, dist_func_param_);
-                    std::pair<dist_t, tableint> d_i = std::make_pair(dist,candidate_id);
-                    auto new_mmr = countMMR(eps_for_diversity_search,d_i,lambda);
-//                将新邻居装入candidate_set
-                    candidate_set.emplace_back(std::make_pair(new_mmr,candidate_id));
-                }
-            }
-        }
-
-//        using namespace std::chrono; // 使用chrono命名空间，简化代码
+//        auto index = candidate_set.begin();
+//        dist_t mmr_dist = -std::numeric_limits<dist_t>::max();
 //
-//        auto start = high_resolution_clock::now(); // 开始时间
-
-//        duration  candidate_duration_;
-//        duration  neighbour_duration_;
-
-//        std::cout<<12345<<std::endl;
-
-//        {
-//            std::cout<<" 17 vertex neighbour"<<std::endl;
-//            int *neighbor = (int *) get_linklist0(17);
-//            size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
-//            for(size_t j = 0 ; j < neighbor_size ; j++){
-//                int candidate_id = *(neighbor + j);
-//                std::cout<<candidate_id<<" ";
+//        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
+//            if(mmr_dist < it->first){
+//                mmr_dist = it->first;
+//                index = it;
 //            }
-//            std::cout<<std::endl;
 //        }
-//        {
-//            std::cout<<" 18 vertex neighbour"<<std::endl;
-//            int *neighbor = (int *) get_linklist0(18);
-//            size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
-//            for(size_t j = 0 ; j < neighbor_size ; j++){
-//                int candidate_id = *(neighbor + j);
-//                std::cout<<candidate_id<<" ";
-//            }
-//            std::cout<<std::endl;
-//        }
-
-//        printEps(eps_for_diversity_search);
-//        迭代地根据MMR更新点集合
-        while(eps_for_diversity_search.second < k){
-//            clearCandidateSet(candidate_set,vl,k);
-//            std::cout<<"eps "<<eps_for_diversity_search.second<<std::endl;
-//            std::cout<<"candi "<<candidate_set.size()<<std::endl;
-            chooseElementWithMMR(eps_for_diversity_search,candidate_set,data_point,lambda,vl);
-//            printEps(eps_for_diversity_search);
-        }
-//        std::cout<<1234567<<std::endl;
-//        std::cout << "Time taken by function: "
-//                  << candidate_duration_.count() << " microseconds" << std::endl;
-//        std::cout << "Time taken by function: "
-//                  << neighbour_duration_.count() << " microseconds" << std::endl;
-//        auto stop = high_resolution_clock::now(); // 结束时间
-////
-//        auto duration = duration_cast<microseconds>(stop - start); // 计算持续时间
-////
-//        std::cout << "Time taken by function chooseElementWithMMR: "
-//                  << duration.count() << " microseconds" << std::endl;
-
-//        将起始点集合放入candidate_set
-
-
-        std::priority_queue<std::pair<dist_t, labeltype >> result;
-        for(int i = 0 ; i < eps_for_diversity_search.second; i++){
-            auto items = *(eps_for_diversity_search.first + i);
-//            auto temp_item = ;
-            result.push(std::make_pair(items.first,getExternalLabel(items.second)));
-//            result.push(std::pair<dist_t, labeltype>(,));
-        }
-//        释放空间,现在candidate_set放入了起始的k_1个点
-        delete []eps_for_diversity_search.first;
-
-        return result;
-    }
-
-    std::priority_queue<std::pair<dist_t, labeltype >>
-    D_searchKnn(const void *query_data, size_t k,diversity_type dt, size_t k_1 =1,dist_t lambda=0.8,BaseFilterFunctor* isIdAllowed = nullptr) const {
-        switch (dt) {
-            case none:{
-                return searchKnn(query_data,k,isIdAllowed);
-            }
-            break;
-            case MMR:{
-                using namespace std::chrono; // 使用chrono命名空间，简化代码
-                auto tops = diversityAwareSearchKnn(query_data,k_1,isIdAllowed);
-//                time_point start_time;
-//                start_time = high_resolution_clock::now();
-                auto ret = updateTopCandidateWithMMR(tops,query_data,k,lambda,k_1);
-//                auto stop_time = high_resolution_clock::now();
-//                auto durations = duration_cast<microseconds>(stop_time - start_time);
-//                std::cout << "123Time taken by function: "
-//                          << durations.count() << " microseconds" << std::endl;
-                return ret;
-            }
-            break;
-        }
-        std::priority_queue<std::pair<dist_t, labeltype >> result;
-        return result;
-    }
-
-    //      使用这个函数时,candidate_set处于上一轮的状态
-    void chooseElementWithMMRFromResult(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
-                              std::list <std::pair<dist_t, tableint>> &candidate_set,
-                              const void *data_point,
-                              dist_t lambda,
-                              duration  &candidate_duration_,
-                              duration  &neighbour_duration_)const{
-        auto index = candidate_set.begin();
-        dist_t mmr_dist = -std::numeric_limits<dist_t>::max();
-        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
-            if(mmr_dist < it->first){
-                mmr_dist = it->first;
-                index = it;
-            }
-        }
-        char *element_mmr = getDataByInternalId(index->second);
-        dist_t element_mmr_dist = fstdistfunc_(data_point, element_mmr, dist_func_param_);
-        std::pair<dist_t, tableint> e_insert = std::make_pair(element_mmr_dist,index->second);
-//        向eps_for_diversity_search添加新点
-        insertEpsForDiversitySearch(eps_for_diversity_search,e_insert);
-//        更新candidate_set
-//        更新已有邻居
-        candidate_set.erase(index);
-
-//        time_point start_time;
-//        start_time = high_resolution_clock::now();
+//        char *element_mmr = getDataByInternalId(index->second);
+//        dist_t element_mmr_dist = fstdistfunc_(data_point, element_mmr, dist_func_param_);
+//        std::pair<dist_t, tableint> e_insert = std::make_pair(element_mmr_dist,index->second);
+////        向eps_for_diversity_search添加新点
+//        insertEpsForDiversitySearch(eps_for_diversity_search,e_insert);
+////        更新candidate_set
+//        candidate_set.erase(index);
+//
+//
+////        time_point start_time;
+////        start_time = high_resolution_clock::now();
 //
 //        // 更新原有的candidate_set的点集合,根据刚刚加入eps_for_diversity_search的点更新
 //        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
 //            char *temp = getDataByInternalId(it->second);
-//            dist_t temp_element_dist_with_lambda = (1-lambda) * fstdistfunc_(temp, element_mmr, dist_func_param_);
+//            dist_t temp_element_dist_with_lambda = (1-lambda) * L2Sqr(temp, element_mmr, dist_func_param_);
 ////            mmr = -lambda* dist(Q,temp) + (1-lambda) * max(dist(d_i,temp))
 //            dist_t temp_query_dist = fstdistfunc_(temp,data_point,dist_func_param_);
 //            dist_t res = it->first + lambda*temp_query_dist;    //(1-lambda) * max(dist(d_i,temp)) = mmr+ lambda* dist(Q,temp)
@@ -1942,33 +1677,312 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
 //            }
 //        }
 //
-//        auto stop_time = high_resolution_clock::now();
-//        candidate_duration_ += stop_time - start_time;
-//
+////        auto stop_time = high_resolution_clock::now();
+////        candidate_duration_ += stop_time - start_time;
+////        std::cout<<123456789<<std::endl;
 ////        加入新邻居,增大可选集合
-//        start_time = high_resolution_clock::now();
+////        start_time = high_resolution_clock::now();
 //
 //
 //        int *neighbor = (int *) get_linklist0((eps_for_diversity_search.first+eps_for_diversity_search.second - 1)->second);
 //        size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
 ////        neighbor_size = (neighbor_size > 5)?5:neighbor_size;
 ////            遍历每一个邻居
-//        for(size_t j = 0 ; j < neighbor_size ; j++){
+//        for(size_t j = 1 ; j <= neighbor_size ; j++){
 //            int candidate_id = *(neighbor + j);
 //            if(visited_array[candidate_id] != visited_array_tag){
 //                visited_array[candidate_id] = visited_array_tag;
 //                char *currObj1 = (getDataByInternalId(candidate_id));
 //                dist_t dist = fstdistfunc_(data_point, currObj1, dist_func_param_);
 //                std::pair<dist_t, tableint> d_i = std::make_pair(dist,candidate_id);
-//                auto new_mmr = countMMR(eps_for_diversity_search,d_i,lambda);
+//                auto new_mmr = countMMR(eps_for_diversity_search,d_i,lambda,relevanceMetric);
 ////                将新邻居装入candidate_set
 //                candidate_set.emplace_back(std::make_pair(new_mmr,candidate_id));
 //            }
 //        }
 //
-//        stop_time = high_resolution_clock::now();
-//        neighbour_duration_ += stop_time - start_time;
-    }
+////        stop_time = high_resolution_clock::now();
+////        neighbour_duration_ += stop_time - start_time;
+//    }
+//
+//    void updateCurrentCentroid(std::vector <std::vector<dist_t>> &centroid
+//                               ){
+//
+//    }
+//
+//    void chooseElementWithCDM_EMMR(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
+//                                   std::list <std::pair<dist_t, tableint>> &candidate_set,
+//                                   std::vector <std::vector<dist_t>> &centroid,
+//                                   const void *data_point,
+//                                   dist_t lambda,
+//                                   VisitedList * vl,
+//                                   duration  &candidate_duration_,
+//                                   duration  &neighbour_duration_)const{
+////        1.从candidate_set中挑选一个最大的具有最大CDM_EMMR的点
+//        vl_type *visited_array = vl->mass;
+//        vl_type visited_array_tag = vl->curV;
+//        auto index = candidate_set.begin();
+//        dist_t mmr_dist = -std::numeric_limits<dist_t>::max();
+//
+//        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
+//            if(mmr_dist < it->first){
+//                mmr_dist = it->first;
+//                index = it;
+//            }
+//        }
+//        char *element_mmr = getDataByInternalId(index->second);
+//        dist_t element_mmr_dist = fstdistfunc_(data_point, element_mmr, dist_func_param_);
+//        std::pair<dist_t, tableint> e_insert = std::make_pair(element_mmr_dist,index->second);
+////        向eps_for_diversity_search添加新点
+//        insertEpsForDiversitySearch(eps_for_diversity_search,e_insert);
+////        更新candidate_set
+//        candidate_set.erase(index);
+//
+//
+//    }
+//
+//    void insertEpsForDiversitySearch(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
+//                                     std::pair<dist_t, tableint> &e) const{
+//        *(eps_for_diversity_search.first + eps_for_diversity_search.second) = e;
+//        eps_for_diversity_search.second++;
+//    }
+//
+//    void filterTopK(std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
+//                    std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
+//                    dist_t lambda,
+//                    size_t k_1) const{
+////        根据MMR将top_candidates补齐至k_1 (todo)
+//
+//    }
+//    /*
+//     * method one to update result with MMR to gain diversity
+//     *      top_candidates is the result to be updated
+//     *      lambda is a parameter in MMR definition to control the ratio between similarity and diversity
+//     *      k_1 is the entry point number for Diversity search,set to 1 by default
+//     */
+//    std::priority_queue<std::pair<dist_t, labeltype >> updateTopCandidateWithMMR(
+//            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
+//            const void *data_point,
+//            size_t k,
+//            dist_t lambda=0.8,
+//            size_t k_1 = 1,
+//            bool filter=false,
+//            relevance_metric relevanceMetric=distance) const{
+////        在做完相似性搜索后,做进一步的多样性与相似性平衡的搜索来更新上一步的结果集合
+//
+////      为了效率,不使用智能指针了
+////        std::shared_ptr<std::pair<dist_t, tableint> > eps_for_diversity_search(new std::pair<dist_t, tableint> [top_candidates.size()],
+////                                                                             [](std::pair<dist_t, tableint>* p) { delete[] p; });
+////      用普通指针记得释放first元素的空间
+//        std::pair<std::pair<dist_t, tableint> *, size_t> eps_for_diversity_search = std::make_pair(new std::pair<dist_t, tableint> [k+1],0);
+////        这里candidate_set中每一个元素,first存储的是MMR得分,second存储的是对应点的id
+//        std::list <std::pair<dist_t, tableint>> candidate_set;
+//        VisitedList * vl = visited_list_pool_->getFreeVisitedList();
+//        vl_type *visited_array = vl->mass;
+//        vl_type visited_array_tag = vl->curV;
+//
+//        if(!top_candidates.empty()){
+//            auto tops = top_candidates.top();
+//            insertEpsForDiversitySearch(eps_for_diversity_search,tops);
+//            visited_array[tops.second] = visited_array_tag;
+//            top_candidates.pop();
+//        }
+////        选取出的k_1个点,最终会被放入top_candidate_with_mmr中
+//        if(filter){
+////            如果选择过滤,就会利用MMR从top-K个顶点中选取出k_1个点作为多样性搜索的起始点
+//            filterTopK(top_candidates,eps_for_diversity_search,lambda,k_1);
+//        }else{
+////            如果不选择过滤,就直接利用top-K个顶点中的前k_1个点作为多样性搜索的起始点
+//            while(!top_candidates.empty() && eps_for_diversity_search.second < k_1){
+//                auto tops = top_candidates.top();
+//                insertEpsForDiversitySearch(eps_for_diversity_search,tops);
+//                visited_array[tops.second] = visited_array_tag;
+//                top_candidates.pop();
+//            }
+//        }
+//        while(!top_candidates.empty())  top_candidates.pop();
+//
+////        std::cout<<123<<std::endl;
+//
+////        现在eps_for_diversity_search装着MMR公式中地S(已选择点)集合,现在访问每一个点的邻居点初始化candidate_set
+//        for(size_t i = 0;i< eps_for_diversity_search.second ; i++){
+//            int *neighbor = (int *) get_linklist0((eps_for_diversity_search.first+i)->second);
+//            size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
+////            遍历每一个邻居
+//            for(size_t j = 1 ; j <= neighbor_size ; j++){
+//                int candidate_id = *(neighbor + j);
+//                if(visited_array[candidate_id] != visited_array_tag){
+//                    visited_array[candidate_id] = visited_array_tag;
+//                    char *currObj1 = (getDataByInternalId(candidate_id));
+//                    dist_t dist = fstdistfunc_(data_point, currObj1, dist_func_param_);
+//                    std::pair<dist_t, tableint> d_i = std::make_pair(dist,candidate_id);
+//                    auto new_mmr = countMMR(eps_for_diversity_search,d_i,lambda,relevanceMetric);
+////                将新邻居装入candidate_set
+//                    candidate_set.emplace_back(std::make_pair(new_mmr,candidate_id));
+//                }
+//            }
+//        }
+//
+////        using namespace std::chrono; // 使用chrono命名空间，简化代码
+////
+////        auto start = high_resolution_clock::now(); // 开始时间
+//
+////        duration  candidate_duration_;
+////        duration  neighbour_duration_;
+//
+////        std::cout<<12345<<std::endl;
+//
+////        {
+////            std::cout<<" 17 vertex neighbour"<<std::endl;
+////            int *neighbor = (int *) get_linklist0(17);
+////            size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
+////            for(size_t j = 0 ; j < neighbor_size ; j++){
+////                int candidate_id = *(neighbor + j);
+////                std::cout<<candidate_id<<" ";
+////            }
+////            std::cout<<std::endl;
+////        }
+////        {
+////            std::cout<<" 18 vertex neighbour"<<std::endl;
+////            int *neighbor = (int *) get_linklist0(18);
+////            size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
+////            for(size_t j = 0 ; j < neighbor_size ; j++){
+////                int candidate_id = *(neighbor + j);
+////                std::cout<<candidate_id<<" ";
+////            }
+////            std::cout<<std::endl;
+////        }
+//
+////        printEps(eps_for_diversity_search);
+////        迭代地根据MMR更新点集合
+//        while(eps_for_diversity_search.second < k){
+////            clearCandidateSet(candidate_set,vl,k);
+////            std::cout<<"eps "<<eps_for_diversity_search.second<<std::endl;
+////            std::cout<<"candi "<<candidate_set.size()<<std::endl;
+//            chooseElementWithMMR(eps_for_diversity_search,candidate_set,data_point,lambda,vl,relevanceMetric);
+////            printEps(eps_for_diversity_search);
+//        }
+////        std::cout<<1234567<<std::endl;
+////        std::cout << "Time taken by function: "
+////                  << candidate_duration_.count() << " microseconds" << std::endl;
+////        std::cout << "Time taken by function: "
+////                  << neighbour_duration_.count() << " microseconds" << std::endl;
+////        auto stop = high_resolution_clock::now(); // 结束时间
+//////
+////        auto duration = duration_cast<microseconds>(stop - start); // 计算持续时间
+//////
+////        std::cout << "Time taken by function chooseElementWithMMR: "
+////                  << duration.count() << " microseconds" << std::endl;
+//
+////        将起始点集合放入candidate_set
+//
+//
+//        std::priority_queue<std::pair<dist_t, labeltype >> result;
+//        for(int i = 0 ; i < eps_for_diversity_search.second; i++){
+//            auto items = *(eps_for_diversity_search.first + i);
+////            auto temp_item = ;
+//            result.push(std::make_pair(items.first,getExternalLabel(items.second)));
+////            result.push(std::pair<dist_t, labeltype>(,));
+//        }
+////        释放空间,现在candidate_set放入了起始的k_1个点
+//        delete []eps_for_diversity_search.first;
+//
+//        return result;
+//    }
+//
+//    std::priority_queue<std::pair<dist_t, labeltype >>
+//    D_searchKnn(const void *query_data, size_t k,diversity_type dt,relevance_metric relevanceMetric=distance, size_t k_1 =1,dist_t lambda=0.8,BaseFilterFunctor* isIdAllowed = nullptr) const {
+//        switch (dt) {
+//            case none:{
+//                return searchKnn(query_data,k,isIdAllowed);
+//            }
+//            break;
+//            case MMR:{
+//                using namespace std::chrono; // 使用chrono命名空间，简化代码
+//                auto tops = diversityAwareSearchKnn(query_data,k_1,isIdAllowed);
+////                time_point start_time;
+////                start_time = high_resolution_clock::now();
+//                auto ret = updateTopCandidateWithMMR(tops,query_data,k,lambda,k_1,relevanceMetric);
+////                auto stop_time = high_resolution_clock::now();
+////                auto durations = duration_cast<microseconds>(stop_time - start_time);
+////                std::cout << "123Time taken by function: "
+////                          << durations.count() << " microseconds" << std::endl;
+//                return ret;
+//            }
+//            break;
+//        }
+//        std::priority_queue<std::pair<dist_t, labeltype >> result;
+//        return result;
+//    }
+//
+//    //      使用这个函数时,candidate_set处于上一轮的状态
+//    void chooseElementWithMMRFromResult(std::pair<std::pair<dist_t, tableint> *, size_t>& eps_for_diversity_search,
+//                              std::list <std::pair<dist_t, tableint>> &candidate_set,
+//                              const void *data_point,
+//                              dist_t lambda,
+//                              duration  &candidate_duration_,
+//                              duration  &neighbour_duration_)const{
+//        auto index = candidate_set.begin();
+//        dist_t mmr_dist = -std::numeric_limits<dist_t>::max();
+//        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
+//            if(mmr_dist < it->first){
+//                mmr_dist = it->first;
+//                index = it;
+//            }
+//        }
+//        char *element_mmr = getDataByInternalId(index->second);
+//        dist_t element_mmr_dist = fstdistfunc_(data_point, element_mmr, dist_func_param_);
+//        std::pair<dist_t, tableint> e_insert = std::make_pair(element_mmr_dist,index->second);
+////        向eps_for_diversity_search添加新点
+//        insertEpsForDiversitySearch(eps_for_diversity_search,e_insert);
+////        更新candidate_set
+////        更新已有邻居
+//        candidate_set.erase(index);
+//
+////        time_point start_time;
+////        start_time = high_resolution_clock::now();
+////
+////        // 更新原有的candidate_set的点集合,根据刚刚加入eps_for_diversity_search的点更新
+////        for(auto it = candidate_set.begin(); it != candidate_set.end(); it++){
+////            char *temp = getDataByInternalId(it->second);
+////            dist_t temp_element_dist_with_lambda = (1-lambda) * fstdistfunc_(temp, element_mmr, dist_func_param_);
+//////            mmr = -lambda* dist(Q,temp) + (1-lambda) * max(dist(d_i,temp))
+////            dist_t temp_query_dist = fstdistfunc_(temp,data_point,dist_func_param_);
+////            dist_t res = it->first + lambda*temp_query_dist;    //(1-lambda) * max(dist(d_i,temp)) = mmr+ lambda* dist(Q,temp)
+////            if(res < temp_element_dist_with_lambda){
+//////              根据MMR,说明需要更新当前结点
+////                dist_t new_mmr =  -lambda*temp_query_dist +  temp_element_dist_with_lambda;
+////                it->first = new_mmr;
+////            }
+////        }
+////
+////        auto stop_time = high_resolution_clock::now();
+////        candidate_duration_ += stop_time - start_time;
+////
+//////        加入新邻居,增大可选集合
+////        start_time = high_resolution_clock::now();
+////
+////
+////        int *neighbor = (int *) get_linklist0((eps_for_diversity_search.first+eps_for_diversity_search.second - 1)->second);
+////        size_t neighbor_size = getListCount((linklistsizeint*)neighbor);
+//////        neighbor_size = (neighbor_size > 5)?5:neighbor_size;
+//////            遍历每一个邻居
+////        for(size_t j = 0 ; j < neighbor_size ; j++){
+////            int candidate_id = *(neighbor + j);
+////            if(visited_array[candidate_id] != visited_array_tag){
+////                visited_array[candidate_id] = visited_array_tag;
+////                char *currObj1 = (getDataByInternalId(candidate_id));
+////                dist_t dist = fstdistfunc_(data_point, currObj1, dist_func_param_);
+////                std::pair<dist_t, tableint> d_i = std::make_pair(dist,candidate_id);
+////                auto new_mmr = countMMR(eps_for_diversity_search,d_i,lambda);
+//////                将新邻居装入candidate_set
+////                candidate_set.emplace_back(std::make_pair(new_mmr,candidate_id));
+////            }
+////        }
+////
+////        stop_time = high_resolution_clock::now();
+////        neighbour_duration_ += stop_time - start_time;
+//    }
 
 };
 }  // namespace D-hnswlib

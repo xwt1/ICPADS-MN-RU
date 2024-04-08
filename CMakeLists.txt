@@ -24,9 +24,16 @@ if(NOT MLPACK_FOUND)
     message(FATAL_ERROR "MLPACK not found. Please run: apt-get install libmlpack-dev")
 endif()
 
+# 找到Eigen库
+find_package(Eigen3 3.3 REQUIRED NO_MODULE)
+if(NOT Eigen3_FOUND)
+    message(FATAL_ERROR "Eigen3 not found. Please run: sudo apt-get install libeigen3-dev")
+endif()
+
 # 包括HNSWlib目录与NN-Decent
 #add_subdirectory(external/hnswlib)
 add_subdirectory(external/D-hnswlib)
+
 include_directories(external/nndescent/include)
 
 # 添加子目录，这会创建graph-search目标
@@ -73,3 +80,10 @@ target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE hnswlib)
 target_link_libraries(generate_index PRIVATE hnswlib)
 target_link_libraries(compare_rawMMR_with_Dhnsw_in_ip PRIVATE hnswlib)
 target_link_libraries(generate_index_ip PRIVATE hnswlib)
+
+# 链接Eigen库
+target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE Eigen3::Eigen)
+target_link_libraries(compare_rawMMR_with_Dhnsw_in_ip PRIVATE Eigen3::Eigen)
+target_link_libraries(graph-search PRIVATE Eigen3::Eigen)
+target_link_libraries(generate_index PRIVATE Eigen3::Eigen)
+target_link_libraries(generate_index_ip PRIVATE Eigen3::Eigen)
