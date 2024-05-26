@@ -1,6 +1,7 @@
 data/*.csv
 data/**/*.bin
 data/**/*.xml
+data/**
 log/
 cmake-build-debug/
 cmake-build-debug_prime/

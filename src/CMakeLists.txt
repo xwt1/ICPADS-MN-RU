@@ -41,3 +41,11 @@ add_executable(compare_rawMMR_With_Dhnsw ${SOURCE_FILES} ./test/compare_rawMMR_W
 add_executable(compare_rawMMR_with_Dhnsw_in_ip ${SOURCE_FILES} ./test/compare_rawMMR_with_Dhnsw_in_ip.cpp)
 add_executable(generate_index ${SOURCE_FILES} ./test/generate_index.cpp)
 add_executable(generate_index_ip ${SOURCE_FILES} ./test/generate_index_ip.cpp)
+
+add_executable(generate_mmr_index ./test/generate_mmr_index.cpp)
+add_executable(delete_update_connection ./test/delete_update.cpp)
+add_executable(tes_mmr_and_normal ./test/tes_mmr_and_normal.cpp)
+add_executable(export_cluster_graph ./test/export_cluster_graph.cpp)
+add_executable(test_new_level_selection test/test_new_level_selection/test_new_level_selection.cpp)
+add_executable(test_new_level_selection2 test/test_new_level_selection/test_new_level_selection2.cpp)
+add_executable(search_performance test/test_new_level_selection/search_performance.cpp)

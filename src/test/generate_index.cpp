@@ -12,6 +12,56 @@
 #include "file.h"
 #include "evaluate/evaluate.h"
 
+#include <iostream>
+#include <thread>
+#include <vector>
+#include <atomic>
+#include <mutex>
+#include <exception>
+
+// Helper function for multithreading
+template<class Function>
+inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn) {
+    if (numThreads <= 0) {
+        numThreads = std::thread::hardware_concurrency();
+    }
+    if (numThreads == 1) {
+        for (size_t id = start; id < end; id++) {
+            fn(id, 0);
+        }
+    } else {
+        std::vector<std::thread> threads;
+        std::atomic<size_t> current(start);
+        std::exception_ptr lastException = nullptr;
+        std::mutex lastExceptMutex;
+
+        for (size_t threadId = 0; threadId < numThreads; ++threadId) {
+            threads.push_back(std::thread([&, threadId] {
+                while (true) {
+                    size_t id = current.fetch_add(1);
+                    if (id >= end) break;
+                    try {
+                        fn(id, threadId);
+                    } catch (...) {
+                        std::unique_lock<std::mutex> lastExcepLock(lastExceptMutex);
+                        lastException = std::current_exception();
+                        current = end;
+                        break;
+                    }
+                }
+            }));
+        }
+
+        for (auto &thread : threads) {
+            thread.join();
+        }
+
+        if (lastException) {
+            std::rethrow_exception(lastException);
+        }
+    }
+}
+
 void generateIndexFromBvec(int dim,
                            int max_elements,
                            std::string data_file_path,
@@ -25,9 +75,10 @@ void generateIndexFromBvec(int dim,
     int totalVectors = 0;
     if(ReadOpt::ReadFvecsFileIntoArray<float>(data_file_path,data,totalVectors,dim,max_elements)){
         std::cout<<"开始生成索引"<<std::endl;
-        for (int i = 0; i < max_elements; i++) {
+        int num_threads = std::thread::hardware_concurrency();
+        ParallelFor(0, max_elements, num_threads, [&](size_t i, size_t threadId) {
             alg_hnsw->addPoint(data + i * dim, i);
-        }
+        });
         alg_hnsw->saveIndex(index_file);
         std::cout<<"索引生成完成"<<std::endl;
         delete[] data;
