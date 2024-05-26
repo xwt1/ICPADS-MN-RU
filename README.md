@@ -2,9 +2,12 @@ before start:
 ```
 apt update 
 
+apt-get install libmlpack-dev
+
 apt-get install libomp-dev
 
 apt install libeigen3-dev
+
 ```
 in main directory, execute:
 ```

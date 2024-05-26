@@ -10,6 +10,7 @@
 #include <cmath>
 #include <list>
 #include <memory>
+#include <stack>
 
 namespace hnswlib {
 typedef unsigned int tableint;
@@ -466,6 +467,65 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
     }
 
 
+//    void getNeighborsByHeuristic2(
+//            std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
+//            const size_t M, double lambda = 0.9) {
+//        if (top_candidates.size() < M) {
+//            return;
+//        }
+//
+//        std::vector<std::pair<dist_t, tableint>> selected;
+//        std::priority_queue<std::pair<double, tableint>> mmr_candidates; // 存储候选项及其MMR值
+//
+//        // 初始化MMR候选队列
+//        while (!top_candidates.empty()) {
+//            auto candidate = top_candidates.top();
+//            top_candidates.pop();
+//            double score = -lambda * candidate.first;  // 初始时只考虑距离，无多样性
+//            mmr_candidates.emplace(score, candidate.second);
+//        }
+//
+//        // 选择最优点
+//        while (selected.size() < M && !mmr_candidates.empty()) {
+//            auto top = mmr_candidates.top();
+//            mmr_candidates.pop();
+//            selected.push_back({-top.first, top.second});
+//
+//            if (selected.size() == M) break;
+//
+//            // 重新计算剩余候选项的MMR分数
+//            std::priority_queue<std::pair<double, tableint>> new_mmr_candidates;
+//            double diversity_contribution = 0.0;  // 新选择点对多样性的贡献
+//
+//            for (auto &candidate : selected) {
+//                double dist = fstdistfunc_(getDataByInternalId(candidate.second),
+//                                           getDataByInternalId(top.second),
+//                                           dist_func_param_);
+//                diversity_contribution += dist;
+//            }
+//
+//            diversity_contribution /= selected.size();  // 平均距离
+//
+//            while (!mmr_candidates.empty()) {
+//                auto candidate = mmr_candidates.top();
+//                mmr_candidates.pop();
+//
+//                // 更新每个候选项的分数，考虑到新加入的点
+//                double new_score = candidate.first + (1 - lambda) * diversity_contribution;
+//                new_mmr_candidates.emplace(new_score, candidate.second);
+//            }
+//            mmr_candidates = std::move(new_mmr_candidates);
+//        }
+//
+//        // 把选择的点重新放回原优先队列
+//        for (auto &item : selected) {
+//            top_candidates.emplace(-item.first, item.second);
+//        }
+//    }
+
+
+
+
     void getNeighborsByHeuristic2(
         std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
         const size_t M) {
@@ -473,6 +533,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             return;
         }
 
+        // queue_closest: 大根堆, 距离最大的元素相当于原先距离最短的元素
         std::priority_queue<std::pair<dist_t, tableint>> queue_closest;
         std::vector<std::pair<dist_t, tableint>> return_list;
         while (top_candidates.size() > 0) {
@@ -978,6 +1039,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
     * If replacement of deleted elements is enabled: replaces previously deleted point if any, updating it with new point
     */
     void addPoint(const void *data_point, labeltype label, bool replace_deleted = false) {
+
         if ((allow_replace_deleted_ == false) && (replace_deleted == true)) {
             throw std::runtime_error("Replacement of deleted elements is disabled in constructor");
         }
@@ -999,18 +1061,26 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         }
         lock_deleted_elements.unlock();
 
+//        std::cout<<label<<std::endl;
         // if there is no vacant place then add or update point
         // else add point to vacant place
         if (!is_vacant_place) {
             addPoint(data_point, label, -1);
         } else {
+
             // we assume that there are no concurrent operations on deleted element
             labeltype label_replaced = getExternalLabel(internal_id_replaced);
+//            std::cout<<internal_id_replaced<<std::endl;
+//            std::cout<<label_replaced<<std::endl;
             setExternalLabel(internal_id_replaced, label);
+//            labeltype wtf_external_label = getExternalLabel(internal_id_replaced);
+//            std::cout<<wtf_external_label<<std::endl;
+//            std::cout<<label_replaced<<std::endl;
 
             std::unique_lock <std::mutex> lock_table(label_lookup_lock);
             label_lookup_.erase(label_replaced);
             label_lookup_[label] = internal_id_replaced;
+//            std::cout<<label_lookup_[label]<<std::endl;
             lock_table.unlock();
 
             unmarkDeletedInternal(internal_id_replaced);
@@ -1078,8 +1148,9 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
 
                 // Retrieve neighbours using heuristic and set connections.
                 getNeighborsByHeuristic2(candidates, layer == 0 ? maxM0_ : maxM_);
-
+                // 到这一步, candidates中只剩M个点当作neigh的候选邻居
                 {
+                    // 这里修补的是被删除点的邻居的邻居
                     std::unique_lock <std::mutex> lock(link_list_locks_[neigh]);
                     linklistsizeint *ll_cur;
                     ll_cur = get_linklist_at_level(neigh, layer);
@@ -1093,7 +1164,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
                 }
             }
         }
-
+        // 这里是寻找添加点的邻居
         repairConnectionsForUpdate(dataPoint, entryPointCopy, internalId, elemLevel, maxLevelCopy);
     }
 
@@ -1239,6 +1310,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
 
         if ((signed)currObj != -1) {
             if (curlevel < maxlevelcopy) {
+                // 搜索到达该加入点前, 从最顶层(点最少)到这个点第一次出现的层次的上一层,搜索离这个点最近的点
                 dist_t curdist = fstdistfunc_(data_point, getDataByInternalId(currObj), dist_func_param_);
                 for (int level = maxlevelcopy; level > curlevel; level--) {
                     bool changed = true;
@@ -1277,6 +1349,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
                     if (top_candidates.size() > ef_construction_)
                         top_candidates.pop();
                 }
+                // 这个地方是互连的策略,可以尝试改一下
                 currObj = mutuallyConnectNewElement(data_point, cur_c, top_candidates, level, false);
             }
         } else {
@@ -1355,6 +1428,8 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         }
         return result;
     }
+
+
 
 //    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst>
 //    diversityAwareSearchKnn(const void *query_data, size_t k, BaseFilterFunctor* isIdAllowed = nullptr) const {
@@ -1498,6 +1573,166 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
         }
         std::cout << "integrity ok, checked " << connections_checked << " connections\n";
     }
+
+
+    int dfs_check_connection1(tableint node, int level, std::vector<bool>& visited) {
+        std::stack<tableint> stack;
+        stack.push(node);
+        int count = 0;  // Counter for the number of nodes in this connected component
+
+        while (!stack.empty()) {
+            tableint current = stack.top();
+            stack.pop();
+
+            if (!visited[current]) {
+                visited[current] = true;
+                count++;  // Increment the node count for this component
+
+                linklistsizeint *linkList = get_linklist_at_level(current, level);
+                size_t size = getListCount(linkList);
+                tableint *neighbors = (tableint*)(linkList + 1);
+
+                for (size_t i = 0; i < size; i++) {
+                    if (!visited[neighbors[i]]) {
+                        stack.push(neighbors[i]);
+                    }
+                }
+            }
+        }
+        return count;  // Return the size of this component
+    }
+
+
+    std::vector<std::vector<int>> countConnectedComponentsPerLevel1() {
+        std::vector<std::vector<int>> components_per_level(maxlevel_ + 1);
+
+        for (int level = 0; level <= maxlevel_; level++) {
+            std::vector<bool> visited(cur_element_count, false);
+
+            for (tableint i = 0; i < cur_element_count; i++) {
+                if (!visited[i] && element_levels_[i] >= level) {  // Check if the node exists at this level
+                    int component_size = dfs_check_connection1(i, level, visited);
+                    components_per_level[level].push_back(component_size);
+                }
+            }
+        }
+
+        return components_per_level;
+    }
+
+
+
+    void tarjan(int v, int level, int& index, std::vector<int>& indices, std::vector<int>& lowLink,
+                std::stack<int>& stack, std::vector<char>& onStack, std::vector<std::vector<int>>& sccs,int &wtf) {
+        indices[v] = lowLink[v] = index++;
+        wtf++;
+        std::cout<<indices.size()<<std::endl;
+        std::cout<<lowLink.size()<<std::endl;
+        std::cout<<stack.size()<<std::endl;
+        std::cout<<wtf<<std::endl;
+        stack.push(v);
+        onStack[v] = true;
+
+        auto* linkList = get_linklist_at_level(v, level);
+        size_t size = getListCount(linkList);
+        auto* neighbors = (tableint*)(linkList + 1);
+
+//        std::cout << "Visiting node: " << v << ", stack size: " << stack.size() << ", memory usage: " << getMemoryUsage() << " bytes" << std::endl;
+
+        for (size_t i = 0; i < size; ++i) {
+            int w = neighbors[i];
+            if (indices[w] == -1) {
+                tarjan(w, level, index, indices, lowLink, stack, onStack, sccs,wtf);
+                lowLink[v] = std::min(lowLink[v], lowLink[w]);
+            } else if (onStack[w]) {
+                lowLink[v] = std::min(lowLink[v], indices[w]);
+            }
+        }
+
+        if (lowLink[v] == indices[v]) {
+            std::vector<int> scc;
+            int w;
+            do {
+                w = stack.top();
+                stack.pop();
+                onStack[w] = false;
+                scc.push_back(w);
+            } while (w != v);
+            sccs.push_back(scc);
+        }
+    }
+
+    std::vector<std::vector<std::vector<labeltype>>> countConnectedComponentsPerLevel() {
+        std::vector<std::vector<std::vector<labeltype>>> components_per_level(maxlevel_ + 1);
+
+        for (int level = 0; level <= maxlevel_; level++) {
+            int index = 0;
+            std::vector<int> indices_vec(cur_element_count, -1);
+            std::vector<int> lowLink(cur_element_count, -1);
+            std::stack<int> stack;
+            std::vector<char> onStack(cur_element_count, false);
+            std::vector<std::vector<int>> sccs;
+
+            for (tableint i = 0; i < cur_element_count; i++) {
+                std::cout<<"wtf"<<std::endl;
+                int wtf = 0;
+                if (indices_vec[i] == -1 && element_levels_[i] >= level) {
+                    tarjan(i, level, index, indices_vec, lowLink, stack, onStack, sccs,wtf);
+                }
+            }
+
+            for (const auto& scc : sccs) {
+                std::vector<labeltype> component_indices;
+                for (const auto& n : scc) {
+                    if (component_indices.size() < 10) {
+                        component_indices.push_back(getExternalLabel(n));
+                    }
+                }
+                components_per_level[level].push_back(component_indices);
+            }
+        }
+
+        return components_per_level;
+    }
+
+
+    std::vector<labeltype> getNeighborLabels(labeltype external_label) {
+        std::unique_lock<std::mutex> lock(label_lookup_lock);
+        auto it = label_lookup_.find(external_label);
+        if (it == label_lookup_.end()) {
+            throw std::runtime_error("External label not found");
+        }
+        tableint node_id = it->second; // This is the internal ID corresponding to the external label
+
+        linklistsizeint* ll = get_linklist0(node_id); // Get the level 0 link list for the node
+        size_t size = getListCount(ll); // Get the number of neighbors
+        std::vector<labeltype> labels(size);
+        tableint* data = (tableint*)(ll + 1); // Get the start of the neighbors' data
+
+        for (size_t i = 0; i < size; ++i) {
+            labels[i] = getExternalLabel(data[i]); // Convert each internal ID to an external label
+        }
+
+        return labels;
+    }
+
+    std::vector<size_t> getExcludedGlobalLabels(const std::vector<size_t> & global_label) const{
+        std::vector <size_t> result;
+        std::unordered_map <labeltype ,bool> is_label_exist;
+        for(const auto &i : global_label){
+            is_label_exist[i] = true;
+        }
+        for(const auto &i : label_lookup_){
+            auto exist_global_label = i.first;
+            if(is_label_exist[exist_global_label] == false){
+                result.push_back(exist_global_label);
+            }
+        }
+        return result;
+    };
+
+
+
 
 //    /*
 //     * count the diversity with Maximal

@@ -1,3 +1,1 @@
-开始生成索引
-索引生成完成
-data successfully write in:/home/xiaowentao/WorkSpace/training-plan/dockerimages/graph-search/data/sift/index/index_log.csv.
+nohup: ignoring input

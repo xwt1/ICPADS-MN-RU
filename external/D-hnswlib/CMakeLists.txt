@@ -6,7 +6,8 @@ project(hnswlib
 include(GNUInstallDirs)
 include(CheckCXXCompilerFlag)
 
-add_library(hnswlib INTERFACE)
+add_library(hnswlib INTERFACE
+        hnswlib/d_hnswalg.h)
 add_library(hnswlib::hnswlib ALIAS hnswlib)
 
 target_include_directories(hnswlib INTERFACE
@@ -84,7 +85,8 @@ if(HNSWLIB_EXAMPLES)
     add_executable(multivector_search_test tests/cpp/multivector_search_test.cpp)
     target_link_libraries(multivector_search_test hnswlib)
 
-    add_executable(epsilon_search_test tests/cpp/epsilon_search_test.cpp)
+    add_executable(epsilon_search_test tests/cpp/epsilon_search_test.cpp
+            hnswlib/d_hnswalg.h)
     target_link_libraries(epsilon_search_test hnswlib)
 
     add_executable(test_updates tests/cpp/updates_test.cpp)

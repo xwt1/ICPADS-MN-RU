@@ -32,7 +32,9 @@ endif()
 
 # 包括HNSWlib目录与NN-Decent
 #add_subdirectory(external/hnswlib)
-add_subdirectory(external/D-hnswlib)
+#add_subdirectory(external/D-hnswlib)
+#add_subdirectory(external/hnswlib_prime/hnswlib)
+add_subdirectory(external/hnswlib_delete/hnswlib)
 
 include_directories(external/nndescent/include)
 
@@ -80,6 +82,13 @@ target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE hnswlib)
 target_link_libraries(generate_index PRIVATE hnswlib)
 target_link_libraries(compare_rawMMR_with_Dhnsw_in_ip PRIVATE hnswlib)
 target_link_libraries(generate_index_ip PRIVATE hnswlib)
+target_link_libraries(delete_update_connection PRIVATE hnswlib)
+target_link_libraries(generate_mmr_index PRIVATE hnswlib)
+target_link_libraries(tes_mmr_and_normal PRIVATE hnswlib)
+target_link_libraries(export_cluster_graph PRIVATE hnswlib)
+target_link_libraries(test_new_level_selection PRIVATE hnswlib)
+target_link_libraries(test_new_level_selection2 PRIVATE hnswlib)
+target_link_libraries(search_performance PRIVATE hnswlib)
 
 # 链接Eigen库
 target_link_libraries(compare_rawMMR_With_Dhnsw PRIVATE Eigen3::Eigen)

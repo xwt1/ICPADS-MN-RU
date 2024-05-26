@@ -551,6 +551,7 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             }
         }
 
+        // 从这里开始,开始设置neighbour到cur_c的有向边,之前在设置cur_c到neighbour的有向边
         for (size_t idx = 0; idx < selectedNeighbors.size(); idx++) {
             std::unique_lock <std::mutex> lock(link_list_locks_[selectedNeighbors[idx]]);
 
@@ -584,9 +585,11 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
             // If cur_c is already present in the neighboring connections of `selectedNeighbors[idx]` then no need to modify any connections or run the heuristics.
             if (!is_cur_c_present) {
                 if (sz_link_list_other < Mcurmax) {
+                    // 当前邻居的出边数量还不足Mcurmax,直接连接即可
                     data[sz_link_list_other] = cur_c;
                     setListCount(ll_other, sz_link_list_other + 1);
                 } else {
+                    // 否则就要找到一个最弱的结点,断开与它的连接然后与cur_c相连,看了看后面的逻辑,其实就是
                     // finding the "weakest" element to replace it with the new one
                     dist_t d_max = fstdistfunc_(getDataByInternalId(cur_c), getDataByInternalId(selectedNeighbors[idx]),
                                                 dist_func_param_);
@@ -993,7 +996,8 @@ class HierarchicalNSW : public AlgorithmInterface<dist_t> {
 
 
     void updatePoint(const void *dataPoint, tableint internalId, float updateNeighborProbability) {
-        // update the feature vector associated with existing point with new vector
+        // update the fea
+        // ture vector associated with existing point with new vector
         memcpy(getDataByInternalId(internalId), dataPoint, data_size_);
 
         int maxLevelCopy = maxlevel_;
