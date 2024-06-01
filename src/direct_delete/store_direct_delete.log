@@ -1,0 +1,119 @@
+//        /*
+//         * Directly delete node by external label
+//         */
+//        void directDelete(labeltype deleteExternalLabel){
+//            // lock all operations with element by label
+//            // 1. markDelete
+//            markDelete(deleteExternalLabel);
+////            return;
+//
+//            std::unique_lock <std::mutex> lock_table(label_lookup_lock);
+//            auto search = label_lookup_.find(deleteExternalLabel);
+//            if(search == label_lookup_.end()){
+//                throw std::runtime_error("Label not found");
+//            }
+//            tableint internalLabel = search->second;
+//            lock_table.unlock();
+//            // 2.(todo) remove all in edge to node,and
+//            // 3.(todo) localreconnect
+//
+//            //(todo) is not thread safe with add logic, how to make it?
+//            std::unique_lock <std::mutex> lock_node(reverse_linklist_locks_[internalLabel]);
+//            int elemLevel = element_levels_[internalLabel];
+//            if(reverse_linklist_[internalLabel].size() - 1 != elemLevel){
+//                throw std::runtime_error("Level not correct");
+//            }
+//            lock_node.unlock();
+//            std::unique_lock <std::mutex> lock_revss(reverse_linklist_locks_[internalLabel]);
+//
+//            for(int layer = 0 ; layer <= elemLevel ; layer ++){
+//                auto reverseLinklist = reverse_linklist_[internalLabel][layer];
+//                std::vector<tableint> neighbour_two_hop = getConnectionsWithLock(internalLabel, layer);
+//                int siz2 = neighbour_two_hop.size();
+//
+//                for(auto it1 = reverseLinklist.begin() ; it1 != reverseLinklist.end() ; it1++){
+//                    tableint neigh = *it1;
+//                    //3.1 将该节点到删除结点的出边删除,采用local reconnect策略连边
+//                    std::vector<tableint> neighbour_one_hop = getConnectionsWithLock(neigh, layer);
+//
+//                    std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> candidates;
+//
+//                    std::unordered_map <tableint,bool> is_in;
+//                    std::unordered_set <tableint> prime_neighbour;
+//                    int siz = neighbour_one_hop.size();
+//                    for(int indice = 0; indice < siz; indice++) {
+//                        prime_neighbour.insert(neighbour_one_hop[indice]);
+//                        if(neighbour_one_hop[indice] == internalLabel || neighbour_one_hop[indice] == neigh || is_in[neighbour_one_hop[indice]]){
+//                            continue;
+//                        }
+//                        is_in[neighbour_one_hop[indice]] = true;
+//                        dist_t distance = fstdistfunc_(getDataByInternalId(neigh), getDataByInternalId(neighbour_one_hop[indice]), dist_func_param_);
+//                        candidates.emplace(distance,neighbour_one_hop[indice]);
+//                    }
+//
+//                    for(int indice = 0; indice < siz2 ; indice++){
+//                        if(neighbour_two_hop[indice] == internalLabel || neighbour_two_hop[indice] == neigh|| is_in[neighbour_two_hop[indice]]){
+//                            continue;
+//                        }
+//                        is_in[neighbour_two_hop[indice]] = true;
+//                        dist_t distance = fstdistfunc_(getDataByInternalId(neigh), getDataByInternalId(neighbour_two_hop[indice]), dist_func_param_);
+//                        candidates.emplace(distance,neighbour_two_hop[indice]);
+//                    }
+//
+//                    auto new_neighbours = prime_neighbour;
+//
+//                    getNeighborsByHeuristic2(candidates, layer == 0 ? maxM0_ : maxM_);
+//
+//                    auto temp_candidates = candidates;
+//                    while(!temp_candidates.empty()){
+//                        tableint temp_neigh = temp_candidates.top().second;
+//                        if(new_neighbours.find(temp_neigh) != new_neighbours.end()){
+//                            new_neighbours.erase(temp_neigh);
+//                        }
+//                        temp_candidates.pop();
+//                    }
+//                    {
+//                        std::unique_lock <std::mutex> lock(link_list_locks_[neigh]);
+//                        linklistsizeint *ll_cur;
+//                        ll_cur = get_linklist_at_level(neigh, layer);
+//                        size_t candSize = candidates.size();
+//                        setListCount(ll_cur, candSize);
+//                        tableint *data = (tableint *) (ll_cur + 1);
+//                        for (size_t idx = 0; idx < candSize; idx++) {
+//                            data[idx] = candidates.top().second;
+//
+//                            // (xwt)
+//                            if(prime_neighbour.find(data[idx]) ==  prime_neighbour.end()){
+//                                // 找不到,说明是新邻居
+//
+//                                std::unique_lock <std::mutex> lock_rev(reverse_linklist_locks_[data[idx]]);
+//                                reverse_linklist_[data[idx]][layer].push_back(neigh);
+//                            }
+//
+//                            candidates.pop();
+//                        }
+//                    }
+//
+//                    {
+//                        for(auto it2 = new_neighbours.begin(); it2 != new_neighbours.end() ; it2++){
+//                            tableint effect_label = *it2;
+//                            std::unique_lock <std::mutex> lock_rev(reverse_linklist_locks_[effect_label],std::defer_lock);
+//                            if (effect_label != internalLabel) {
+//                                // 前面已经给internalLabel上过锁了
+//                                lock_rev.lock();
+//                            }
+//
+//                            auto rev_link_list = &reverse_linklist_[effect_label][layer];
+//                            for(auto it = rev_link_list->begin(); it != rev_link_list->end(); it++){
+//                                if(*it == neigh){
+//                                    rev_link_list->erase(it);
+//                                    break;
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                }
+//            }
+//
+//        }

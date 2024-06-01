@@ -1,5 +1,0 @@
-X,Y,
-index_file_path,/home/xiaowentao/WorkSpace/training-plan/dockerimages/retrieval-diversity-enhancement/data/sift/index/sift_index_mmr.bin,
-data_file_path,/home/xiaowentao/WorkSpace/training-plan/dockerimages/retrieval-diversity-enhancement/data/sift/sift_base.fvecs,
-dim,128,
-vector_num,1000000,
