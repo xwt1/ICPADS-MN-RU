@@ -15,3 +15,5 @@ data/hnswindex.bin
 **/*.fvecs
 **/*.bvecs
 **/*.ivecs
+venv/**
+external/DiskANN/**

@@ -9,7 +9,7 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
-#include <hnswlib/hnswlib.h>
+#include "hnswlib/hnswlib.h"
 #include <numeric>
 #include <unordered_set>
 #include <algorithm>
@@ -213,12 +213,12 @@ inline void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn
     }
 }
 
-void MarkDeleteMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<size_t>& delete_indices, const std::unordered_map<size_t, size_t>& index_map, int num_threads) {
+void DirectDeleteMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vector<size_t>& delete_indices, const std::unordered_map<size_t, size_t>& index_map, int num_threads) {
     size_t num_delete = delete_indices.size();
 
     ParallelFor(0, num_delete, num_threads, [&](size_t i, size_t) {
         size_t idx = index_map.at(delete_indices[i]);
-        index.markDelete(idx);
+        index.directDelete(idx);
     });
 }
 
@@ -235,7 +235,7 @@ int main(){
     std::string query_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift/sift_query.fvecs";
 
 //    std::string index_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift/freshdiskann_prove/diskann_prove.bin";
-    std::string index_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift/direct_delete/sift_base_all.bin";
+    std::string index_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift/direct_delete/direct_delete.bin";
 
     std::string ground_truth_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/retrieval-diversity-enhancement/data/sift/sift_groundtruth.ivecs";
 
@@ -262,13 +262,14 @@ int main(){
     index.setEf(ef);
 
     // Number of iterations for delete and re-add process
-    int num_iterations = 1;
+    int num_iterations = 1000;
     std::random_device rd;
     std::mt19937 gen(rd());
 
     // Perform initial brute-force k-NN search to get ground truth
     std::vector<std::vector<size_t>> ground_truth = load_ivecs_indices(ground_truth_path);
 
+    size_t last_idx = 0;
     for (int iteration = 0; iteration < num_iterations; ++iteration) {
 //        // Select the indices to delete
 //        int num_to_delete = num_data * 0.01;
@@ -281,10 +282,12 @@ int main(){
         std::unordered_set<size_t> delete_indices_set;
 
         // 计算后一半结点的起始下标
-        size_t start_idx = 0;
-        double delete_rate = 0.001;
-        int num_to_delete = num_data * delete_rate;
+        size_t start_idx = last_idx;
+        int num_to_delete = num_data / num_iterations;
+        double delete_rate = (double)num_to_delete / num_data;
+//        int num_to_delete = num_data * delete_rate;
 //        int num_to_delete = 5;
+        last_idx =  start_idx+num_to_delete;
 
         std::cout<<"删除了大约"<<delete_rate<<"的点"<<std::endl;
         // 将后一半结点的下标插入到集合中
@@ -305,7 +308,7 @@ int main(){
             size_t idx = delete_indices[i];
             deleted_vectors[i] = data[idx];
         }
-//        index.checkTotalInOutDegreeEquality();
+        index.checkTotalInOutDegreeEquality();
 
         std::cout<<"开始删除"<<std::endl;
 
@@ -323,9 +326,9 @@ int main(){
 //        }
 
 //
-        MarkDeleteMultiThread(index, delete_indices, index_map, 1);
+        DirectDeleteMultiThread(index, delete_indices, index_map, 1);
         std::cout<<"删除完成"<<std::endl;
-//        index.checkTotalInOutDegreeEquality();
+        index.checkTotalInOutDegreeEquality();
 
 //        for(int i = 0 ; i < delete_indices.size();i++){
 //            int delete_id = index_map[delete_indices[i]];
@@ -361,21 +364,25 @@ int main(){
         float recall = recall_score(ground_truth, labels, index_map, data_siz);
         double avg_query_time = std::accumulate(query_times.begin(), query_times.end(), 0.0) / query_times.size();
 
+        double sum_time = std::accumulate(query_times.begin(), query_times.end(), 0.0);
+        sum_time += add_duration;
+        sum_time += delete_duration;
+
         std::cout << "Iteration " << iteration + 1 << ":\n";
         std::cout << "RECALL: " << recall << "\n";
         std::cout << "Query Time: " << avg_query_time << " seconds\n";
         std::cout << "Delete Time: " << delete_duration << " seconds\n";
         std::cout << "Add Time: " << add_duration << " seconds\n";
+        std::cout << "SUM Time: " << sum_time << " seconds\n";
+
+        std::vector<std::vector<float>> queries_tmp(queries.begin(),queries.begin()+5);
+        auto results = query_index(&index, queries_tmp, 1000000);
+        std::unordered_map <size_t,bool> excluded_global_labels_all;
+        for (size_t j = 0; j < queries_tmp.size(); ++j) {
+            std::cout << "Query " << j << ":" << std::endl;
+            std::cout << "Labels length: " << results[j].first.size() << ",只能找到这么多的点" << std::endl;
+        }
 
 
-//        std::vector<std::vector<float>> queries_tmp(queries.begin(),queries.begin()+5);
-//        auto results = query_index(&index, queries_tmp, 1000000);
-//        std::unordered_map <size_t,bool> excluded_global_labels_all;
-//        for (size_t j = 0; j < queries_tmp.size(); ++j) {
-//            std::cout << "Query " << j << ":" << std::endl;
-//            std::cout << "Labels length: " << results[j].first.size() << ",只能找到这么多的点" << std::endl;
-//        }
-
-
-    }
+   }
 }
