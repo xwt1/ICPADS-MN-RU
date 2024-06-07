@@ -42,7 +42,7 @@ add_definitions(-DPROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}")
 add_subdirectory(external/hnswlib)
 
 # 添加更改后的 HNSW 库，设置 HNSWLIB_TARGET 变量
-set(HNSWLIB_TARGET modified_hnswlib)
+set(HNSWLIB_TARGET maintenance_hnswlib)
 add_subdirectory(external/hnswlib_delete/hnswlib)
 unset(HNSWLIB_TARGET) # 确保变量不再被后续使用
 
@@ -50,15 +50,27 @@ unset(HNSWLIB_TARGET) # 确保变量不再被后续使用
 add_subdirectory(src)
 
 # 链接修改后的 HNSW 库到您的应用程序
-target_link_libraries(delete_update_lose_recall PRIVATE modified_hnswlib)
-target_link_libraries(compute_delete_update PRIVATE modified_hnswlib)
-#target_link_libraries(freshdiskann_prove PRIVATE hnswlib)
+target_link_libraries(delete_update_lose_recall PRIVATE maintenance_hnswlib)
+target_link_libraries(compute_delete_update PRIVATE maintenance_hnswlib)
 target_link_libraries(freshdiskann_prove PRIVATE hnswlib)
-target_link_libraries(generate_freshdiskann_prove_index PRIVATE modified_hnswlib)
-target_link_libraries(generate_freshdiskann_groundtruth PRIVATE modified_hnswlib)
-
-target_link_libraries(direct_delete_prove PRIVATE modified_hnswlib)
+target_link_libraries(generate_freshdiskann_prove_index PRIVATE hnswlib)
+target_link_libraries(generate_freshdiskann_groundtruth PRIVATE hnswlib)
+target_link_libraries(direct_delete_prove PRIVATE maintenance_hnswlib)
 target_link_libraries(mark_delete PRIVATE hnswlib)
+target_link_libraries(direct_delete_prove_mult PRIVATE maintenance_hnswlib)
+target_link_libraries(mark_delete_mult PRIVATE hnswlib)
+target_link_libraries(generate_direct_index PRIVATE maintenance_hnswlib)
 
-target_link_libraries(generate_direct_index PRIVATE modified_hnswlib)
-#target_link_libraries(delete_update_compare )
+
+
+
+
+target_link_libraries(hnsw_maintenance_generate_sift_index PRIVATE maintenance_hnswlib)
+target_link_libraries(hnsw_prime_generate_sift_index PRIVATE hnswlib)
+target_link_libraries(hnsw_maintenance_generate_gist_index PRIVATE maintenance_hnswlib)
+target_link_libraries(hnsw_prime_generate_gist_index PRIVATE hnswlib)
+target_link_libraries(hnsw_maintenance_generate_imageNet_index PRIVATE maintenance_hnswlib)
+target_link_libraries(hnsw_prime_generate_imageNet_index PRIVATE hnswlib)
+target_link_libraries(compare_search_update_in_different_dataset PRIVATE hnswlib)
+
+target_link_libraries(compute_imagenet_groundtruth.cpp PRIVATE hnswlib)

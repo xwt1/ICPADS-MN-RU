@@ -1054,7 +1054,10 @@ namespace hnswlib {
 
                     auto new_neighbours = prime_neighbour;
 
-                    getNeighborsByHeuristic2(candidates, layer == 0 ? maxM0_ : maxM_);
+                    getNeighborsByHeuristic2_direct_delete(candidates, layer == 0 ? maxM0_ : maxM_,1.0);
+//                    getNeighborsByHeuristic2(candidates, layer == 0 ? maxM0_ : maxM_);
+
+//                    robustPrune(getDataByInternalId(neigh), candidates, 1.1, layer);
 
                     auto temp_candidates = candidates;
                     while(!temp_candidates.empty()){
@@ -1375,6 +1378,26 @@ namespace hnswlib {
                 lock_table.unlock();
 
                 unmarkDeletedInternal(internal_id_replaced);
+
+                // (xwt)
+                int elemLevel = element_levels_[internal_id_replaced];
+                for(int layer = 0; layer <= elemLevel ; layer ++){
+                    std::vector<tableint> delete_ele_neighbour = getConnectionsWithLock(internal_id_replaced, layer);
+                    for(auto &it : delete_ele_neighbour){
+                        std::unique_lock <std::mutex> lock_rev(reverse_linklist_locks_[it]);
+
+                        auto rev_link_list = &reverse_linklist_[it][layer];
+                        for(auto it = rev_link_list->begin(); it != rev_link_list->end(); it++){
+                            if(*it == internal_id_replaced){
+                                rev_link_list->erase(it);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+//                std::unique_lock <std::mutex> lock_rev(reverse_linklist_locks_[internal_id_replaced]);
+
                 updatePoint(data_point, internal_id_replaced, 1.0);
             }
         }
@@ -1505,9 +1528,49 @@ namespace hnswlib {
             }
         }
 
+        // (xwt)
+        void getNeighborsByHeuristic2_direct_delete(
+                std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
+                const size_t M,
+                const dist_t alpha = 1.1) {
+            if (top_candidates.size() < M) {
+                return;
+            }
 
+            std::priority_queue<std::pair<dist_t, tableint>> queue_closest;
+            std::vector<std::pair<dist_t, tableint>> return_list;
+            while (top_candidates.size() > 0) {
+                queue_closest.emplace(-top_candidates.top().first, top_candidates.top().second);
+                top_candidates.pop();
+            }
 
+            while (queue_closest.size()) {
+                if (return_list.size() >= M)
+                    break;
+                std::pair<dist_t, tableint> curent_pair = queue_closest.top();
+                dist_t dist_to_query = -curent_pair.first;
+                queue_closest.pop();
+                bool good = true;
 
+                for (std::pair<dist_t, tableint> second_pair : return_list) {
+                    dist_t curdist =
+                            fstdistfunc_(getDataByInternalId(second_pair.second),
+                                         getDataByInternalId(curent_pair.second),
+                                         dist_func_param_);
+                    if (alpha * curdist < dist_to_query) {
+                        good = false;
+                        break;
+                    }
+                }
+                if (good) {
+                    return_list.push_back(curent_pair);
+                }
+            }
+
+            for (std::pair<dist_t, tableint> curent_pair : return_list) {
+                top_candidates.emplace(-curent_pair.first, curent_pair.second);
+            }
+        }
 
 
         void repairConnectionsForUpdate(
