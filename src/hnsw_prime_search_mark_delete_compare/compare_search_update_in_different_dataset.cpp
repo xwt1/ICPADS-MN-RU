@@ -45,8 +45,17 @@ void output_CSV(std::string index_path,
 
     size_t last_idx = 0;
     {
-        std::unordered_set<size_t> delete_indices_set;
+        std::cout<<"begin search"<<std::endl;
+        // Perform k-NN search and measure recall and query time
+        std::vector<std::vector<size_t>> labels;
+        std::vector<double> query_times;
+        util::query_hnsw_single(index, queries, dim, k, labels, query_times);
+        float recall = util::recall_score(ground_truth, labels, index_map, data_siz);
 
+        std::cout<<"search complete"<<std::endl;
+        double avg_query_time = std::accumulate(query_times.begin(), query_times.end(), 0.0) / queries.size();
+
+        std::unordered_set<size_t> delete_indices_set;
         // set 10000 delete update point,
         size_t start_idx = last_idx;
         int num_to_delete = 1000;
@@ -87,15 +96,7 @@ void output_CSV(std::string index_path,
         double avg_add_time = (double) add_duration / num_to_delete;
         std::cout<<"re-add complete"<<std::endl;
 
-        std::cout<<"begin search"<<std::endl;
-        // Perform k-NN search and measure recall and query time
-        std::vector<std::vector<size_t>> labels;
-        std::vector<double> query_times;
-        util::query_hnsw_single(index, queries, dim, k, labels, query_times);
-        float recall = util::recall_score(ground_truth, labels, index_map, data_siz);
 
-        std::cout<<"search complete"<<std::endl;
-        double avg_query_time = std::accumulate(query_times.begin(), query_times.end(), 0.0) / queries.size();
 
         std::cout << "Avg Query Time: " << avg_query_time << " seconds\n";
         std::cout << "Avg Delete Time: " << avg_delete_time << " seconds\n";
@@ -206,9 +207,15 @@ void output_CSV(std::string index_path,
 }
 
 
-int main(){
+int main(int argc, char* argv[]){
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <root_path>" << std::endl;
+        return 1;
+    }
 
-    std::string root_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement";
+    std::string root_path = argv[1];
+
+//    std::string root_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement";
 
     std::vector <std::string> data_path_vec={
             root_path + "/data/sift/sift_base.fvecs",
@@ -242,7 +249,7 @@ int main(){
 //    std::string query_data_path = root_path + "/data/sift/sift_query.fvecs";
 //    std::string index_path = root_path + "/data/sift/direct_delete/sift_base_all.bin";
 //    std::string ground_truth_path = root_path + "/data/sift/sift_groundtruth.ivecs";
-    std::string output_csv_path = root_path + "/output/table_1/compare_queryTime_and_deleteUpdateTime";
+    std::string output_csv_path = root_path + "/output/figure_1/compare_queryTime_and_deleteUpdateTime";
 
     // generate CSV file
     std::vector<std::vector <std::string>> header = {{"dataset_name" , "query_time" , "delete_update_time", "recall"}};
@@ -267,7 +274,7 @@ int main(){
             }
             break;
             default:{
-                ef = 2000;
+                ef = 800;
             }
         }
         output_CSV(index_path,query_data_path,data_path,dataset_name,output_csv_path,ground_truth_path,ef);
