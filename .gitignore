@@ -22,3 +22,7 @@ data/hnswindex.bin
 venv/**
 external/DiskANN/**
 output/**/*.bin
+*.bin
+*.fvecs
+*.ivecs
+*.bvecs
