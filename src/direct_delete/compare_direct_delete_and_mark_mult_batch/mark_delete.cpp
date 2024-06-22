@@ -230,7 +230,13 @@ void addPointsMultiThread(hnswlib::HierarchicalNSW<float>& index, const std::vec
     });
 }
 
-int main(){
+int main(int argc, char* argv[]){
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <root_path>" << std::endl;
+        return 1;
+    }
+    std::string root_path = argv[1];
+
     std::string data_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift/sift_base.fvecs";
     std::string query_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift/sift_query.fvecs";
 

@@ -26,7 +26,7 @@ int main() {
 
 
     hnswlib::L2Space space(dim);
-    hnswlib::HierarchicalNSW<float> appr_alg(&space, num_points, 32, 600);
+    hnswlib::HierarchicalNSW<float> appr_alg(&space, num_points, 64, 800);
 
 //    num_points =500000;
 

@@ -1,0 +1,3 @@
+- Firstly, run split_sift_2M.py to get two one million dataset
+- Secondly, run change_query_bvecs_to_fvecs.py to change query from bvecs to fvecs
+- 
