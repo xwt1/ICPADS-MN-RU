@@ -26,3 +26,6 @@ output/**/*.bin
 *.fvecs
 *.ivecs
 *.bvecs
+*.ds
+*.q
+*.gt
