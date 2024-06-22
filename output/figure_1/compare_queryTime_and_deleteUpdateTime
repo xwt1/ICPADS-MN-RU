@@ -1,4 +1,0 @@
-dataset_name,query_time,delete_update_time,recall
-sift_1M,0.001527,0.029883,0.922705
-gist_1M,0.018620,0.062187,0.906890
-imageNet,0.012478,0.089065,0.914500

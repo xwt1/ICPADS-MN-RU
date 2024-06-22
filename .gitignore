@@ -5,7 +5,11 @@ data/**
 log/
 cmake-build-debug/
 cmake-build-debug_prime/
+cmake-build-*/
 cmake*/
+build/**
+build/*
+build
 data/hnswindex.bin
 .idea/
 .vscode/
@@ -17,3 +21,4 @@ data/hnswindex.bin
 **/*.ivecs
 venv/**
 external/DiskANN/**
+output/**/*.bin

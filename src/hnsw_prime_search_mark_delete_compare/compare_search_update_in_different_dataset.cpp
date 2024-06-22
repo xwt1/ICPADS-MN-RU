@@ -73,7 +73,7 @@ void output_CSV(std::string index_path,
         }
         std::cout<<"begin delete"<<std::endl;
         auto start_time_delete = std::chrono::high_resolution_clock::now();
-        util::MarkDeleteMultiThread(index, delete_indices, index_map, 1);
+        util::markDeleteMultiThread(index, delete_indices, index_map, 1);
         std::cout<<"delete complete"<<std::endl;
         auto end_time_delete = std::chrono::high_resolution_clock::now();
         auto delete_duration = std::chrono::duration<double>(end_time_delete - start_time_delete).count();
@@ -157,7 +157,7 @@ void output_CSV(std::string index_path,
         }
         std::cout<<"begin delete"<<std::endl;
         auto start_time_delete = std::chrono::high_resolution_clock::now();
-        util::MarkDeleteMultiThread(index, delete_indices, index_map, 1);
+        util::markDeleteMultiThread(index, delete_indices, index_map, 1);
         std::cout<<"delete complete"<<std::endl;
         auto end_time_delete = std::chrono::high_resolution_clock::now();
         auto delete_duration = std::chrono::duration<double>(end_time_delete - start_time_delete).count();
@@ -249,7 +249,7 @@ int main(int argc, char* argv[]){
 //    std::string query_data_path = root_path + "/data/sift/sift_query.fvecs";
 //    std::string index_path = root_path + "/data/sift/direct_delete/sift_base_all.bin";
 //    std::string ground_truth_path = root_path + "/data/sift/sift_groundtruth.ivecs";
-    std::string output_csv_path = root_path + "/output/figure_1/compare_queryTime_and_deleteUpdateTime";
+    std::string output_csv_path = root_path + "/output/figure_1/compare_queryTime_and_deleteUpdateTime.csv";
 
     // generate CSV file
     std::vector<std::vector <std::string>> header = {{"dataset_name" , "query_time" , "delete_update_time", "recall"}};

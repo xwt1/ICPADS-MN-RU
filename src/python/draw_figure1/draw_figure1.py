@@ -5,7 +5,7 @@ import argparse
 
 def main(root_path):
     # CSV文件路径和保存图片的路径
-    csv_file = root_path + '/output/figure_1/compare_queryTime_and_deleteUpdateTime'
+    csv_file = root_path + '/output/figure_1/compare_queryTime_and_deleteUpdateTime.csv'
     output_path = root_path + '/output/figure_1/figure.png'
 
     # 读取CSV文件
