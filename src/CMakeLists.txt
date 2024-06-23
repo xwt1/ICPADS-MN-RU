@@ -204,6 +204,14 @@ add_executable(replaced_update_new_insert_sift_2M replaced_update_vaild/compare_
         util/util.cpp
         util/thread_pool.cpp)
 
+add_executable(end_)
+
+
+
+
+
+
+
 
 # compare the qurey and insert and prove unreachable_points_phenomenon
 add_executable(compare_search_update_in_different_dataset hnsw_prime_search_mark_delete_compare/compare_search_update_in_different_dataset.cpp

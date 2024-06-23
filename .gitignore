@@ -29,3 +29,7 @@ output/**/*.bin
 *.ds
 *.q
 *.gt
+external/DiskANN
+*.zip
+*.tar.gz
+*.tar
