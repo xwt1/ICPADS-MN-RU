@@ -55,6 +55,20 @@ public:
 
     static std::vector<std::vector<size_t>> load_ivecs(const std::string &filename, int &dim, int &num);
 
+    /*
+     * stamp : ef增长间隔
+     */
+    static std::vector<std::vector<float>> countRecallWithDiffPara(hnswlib::HierarchicalNSW<float>& index,
+                                                       const std::vector<std::vector<float>> &queries,
+                                                       std::vector<std::vector<size_t>> ground_truth,
+                                                       std::unordered_map<size_t, size_t> index_map,
+                                                       int k,
+                                                       int start_ef,
+                                                       int end_ef,
+                                                       int stamp,
+                                                       int num_threads);
+
+
     template<class Function>
     inline static void ParallelFor(size_t start, size_t end, size_t numThreads, Function fn) {
         static ThreadPool pool(numThreads > 0 ? numThreads : std::thread::hardware_concurrency());

@@ -204,8 +204,19 @@ add_executable(replaced_update_new_insert_sift_2M replaced_update_vaild/compare_
         util/util.cpp
         util/thread_pool.cpp)
 
-add_executable(end_)
 
+# count end recall
+add_executable(end_recall_full_coverage replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/end_recall.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(end_recall_random replaced_update_vaild/compare_edge_connect_with_prime_random/end_recall.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(end_recall_new_insert replaced_update_vaild/compare_edge_connect_with_prime_new_insert/end_recall.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 
 
