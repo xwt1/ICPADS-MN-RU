@@ -21,6 +21,11 @@ programs=(
   "generate_gist_random_data"
   "generate_imageNet_random_data"
   "generate_sift_random_data"
+  "edge_connected_replaced_update_7_random_imageNet"
+  "edge_connected_replaced_update_8_random_imageNet"
+  "edge_connected_replaced_update_9_random_imageNet"
+  "edge_connected_replaced_update_10_random_imageNet"
+  "replaced_update_random_imageNet"
   "edge_connected_replaced_update_7_random_gist"
   "edge_connected_replaced_update_8_random_gist"
   "edge_connected_replaced_update_9_random_gist"
@@ -31,17 +36,17 @@ programs=(
   "edge_connected_replaced_update_9_random_sift"
   "edge_connected_replaced_update_10_random_sift"
   "replaced_update_random_sift"
-  "edge_connected_replaced_update_7_random_imageNet"
-  "edge_connected_replaced_update_8_random_imageNet"
-  "edge_connected_replaced_update_9_random_imageNet"
-  "edge_connected_replaced_update_10_random_imageNet"
-  "replaced_update_random_imageNet"
 )
 
 log_files=(
     "generate_gist_random_data.log"
     "generate_imageNet_random_data.log"
     "generate_sift_random_data.log"
+    "edge_connected_replaced_update_7_random_imageNet.log"
+    "edge_connected_replaced_update_8_random_imageNet.log"
+    "edge_connected_replaced_update_9_random_imageNet.log"
+    "edge_connected_replaced_update_10_random_imageNet.log"
+    "replaced_update_random_imageNet.log"
     "edge_connected_replaced_update_7_random_gist.log"
     "edge_connected_replaced_update_8_random_gist.log"
     "edge_connected_replaced_update_9_random_gist.log"
@@ -52,11 +57,6 @@ log_files=(
     "edge_connected_replaced_update_9_random_sift.log"
     "edge_connected_replaced_update_10_random_sift.log"
     "replaced_update_random_sift.log"
-    "edge_connected_replaced_update_7_random_imageNet.log"
-    "edge_connected_replaced_update_8_random_imageNet.log"
-    "edge_connected_replaced_update_9_random_imageNet.log"
-    "edge_connected_replaced_update_10_random_imageNet.log"
-    "replaced_update_random_imageNet.log"
 )
 
 # Start programs sequentially and redirect logs

@@ -182,5 +182,6 @@ int main(int argc, char* argv[]){
 
         util::writeCSVApp(output_csv_path, result_data);
     }
+    index.saveIndex(output_index_path);
     return  0;
 }
