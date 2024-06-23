@@ -417,6 +417,38 @@ std::vector<std::vector<size_t>> util::load_ivecs(const std::string &filename, i
     return data;
 }
 
+std::vector<std::vector<float>> util::countRecallWithDiffPara(hnswlib::HierarchicalNSW<float>& index,
+                                                 const std::vector<std::vector<float>> &queries,
+                                                 std::vector<std::vector<size_t>> ground_truth,
+                                                 std::unordered_map<size_t, size_t> index_map,
+                                                 int k,
+                                                 int start_ef,
+                                                 int end_ef,
+                                                 int step,
+                                                 int num_threads) {
+    std::vector<std::vector<float>> recall_and_time_values;
+
+    for (int ef = start_ef; ef <= end_ef; ef += step) {
+        index.setEf(ef);  // 设置HNSW的ef参数
+
+        std::vector<std::vector<size_t>> predictions;
+
+        auto start_time = std::chrono::high_resolution_clock::now();
+        query_hnsw(index, queries, k, num_threads, predictions);
+        auto end_time = std::chrono::high_resolution_clock::now();
+
+        std::chrono::duration<float> query_duration = end_time - start_time;
+        float query_time_in_seconds = query_duration.count();
+
+        float recall = recall_score(ground_truth, predictions, index_map, queries.size());
+
+        recall_and_time_values.push_back({recall, query_time_in_seconds});
+    }
+
+    return recall_and_time_values;
+}
+
+
 
 //std::string util::readJsonFile(const std::string& filename, const std::string& key) {
 //    std::ifstream ifs(filename);

@@ -193,3 +193,9 @@ target_link_libraries(edge_connected_replaced_update_8_new_insert_sift_2M PRIVAT
 target_link_libraries(edge_connected_replaced_update_9_new_insert_sift_2M PRIVATE edge_connect_replaced_update9_hnswlib)
 target_link_libraries(edge_connected_replaced_update_10_new_insert_sift_2M PRIVATE edge_connect_replaced_update10_hnswlib)
 target_link_libraries(replaced_update_new_insert_sift_2M PRIVATE hnswlib)
+
+# count end recall
+# notice that the search process is just the same, so we use the prime hnswlib
+target_link_libraries(end_recall_full_coverage PRIVATE hnswlib)
+target_link_libraries(end_recall_random PRIVATE hnswlib)
+target_link_libraries(end_recall_new_insert PRIVATE hnswlib)

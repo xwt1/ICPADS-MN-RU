@@ -33,3 +33,4 @@ external/DiskANN
 *.zip
 *.tar.gz
 *.tar
+*.o
