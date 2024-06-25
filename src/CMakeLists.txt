@@ -36,6 +36,11 @@ add_executable(compute_netflix_groundtruth compute_groundtruth/compute_netflix_g
         util/util.cpp
         util/thread_pool.cpp)
 
+add_executable(compute_imageNet2M_groundtruth compute_groundtruth/compute_imageNet_2M_groundTruth.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+
 # generate the index
 add_executable(hnsw_maintenance_generate_sift_index generate_index/hnsw_maintenance/generate_sift_index.cpp
         util/util.cpp
@@ -209,17 +214,24 @@ add_executable(replaced_update_new_insert_sift_2M replaced_update_vaild/compare_
 add_executable(end_recall_full_coverage replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/end_recall.cpp
         util/util.cpp
         util/thread_pool.cpp)
-
 add_executable(end_recall_random replaced_update_vaild/compare_edge_connect_with_prime_random/end_recall.cpp
         util/util.cpp
         util/thread_pool.cpp)
-
 add_executable(end_recall_new_insert replaced_update_vaild/compare_edge_connect_with_prime_new_insert/end_recall.cpp
         util/util.cpp
         util/thread_pool.cpp)
-
-
-
+add_executable(end_recall_gist_full_coverage replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/end_recall_gist.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_gist_random replaced_update_vaild/compare_edge_connect_with_prime_random/end_recall_gist.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_imageNet_2M_full_coverage replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/end_recall_imageNet2M.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_imageNet_2M_random replaced_update_vaild/compare_edge_connect_with_prime_random/end_recall_imageNet2M.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 
 

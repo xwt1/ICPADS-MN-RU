@@ -55,10 +55,13 @@ public:
 
     static std::vector<std::vector<size_t>> load_ivecs(const std::string &filename, int &dim, int &num);
 
+    static float recall_score_end_recall(const std::vector<std::vector<size_t>>& ground_truth, const std::vector<std::vector<size_t>>& predictions, const std::unordered_map<size_t, size_t>& index_map);
+
+
     /*
      * stamp : ef增长间隔
      */
-    static std::vector<std::vector<float>> countRecallWithDiffPara(hnswlib::HierarchicalNSW<float>& index,
+    static std::vector<std::vector<double>> countRecallWithDiffPara(hnswlib::HierarchicalNSW<float>& index,
                                                        const std::vector<std::vector<float>> &queries,
                                                        std::vector<std::vector<size_t>> ground_truth,
                                                        std::unordered_map<size_t, size_t> index_map,
@@ -66,7 +69,8 @@ public:
                                                        int start_ef,
                                                        int end_ef,
                                                        int stamp,
-                                                       int num_threads);
+                                                       int num_threads,
+                                                       int data_siz);
 
 
     template<class Function>
