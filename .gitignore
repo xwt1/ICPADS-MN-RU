@@ -22,6 +22,7 @@ data/hnswindex.bin
 venv/**
 external/DiskANN/**
 output/**/*.bin
+output/test/test_gist_unreachable.bin
 *.bin
 *.fvecs
 *.ivecs
