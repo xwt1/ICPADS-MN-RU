@@ -417,7 +417,29 @@ std::vector<std::vector<size_t>> util::load_ivecs(const std::string &filename, i
     return data;
 }
 
-std::vector<std::vector<float>> util::countRecallWithDiffPara(hnswlib::HierarchicalNSW<float>& index,
+float util::recall_score_end_recall(const std::vector<std::vector<size_t>>& ground_truth, const std::vector<std::vector<size_t>>& predictions, const std::unordered_map<size_t, size_t>& index_map) {
+    size_t hit_count = 0;
+    for (size_t i = 0; i < ground_truth.size(); ++i) {
+        std::unordered_set<size_t> true_set(ground_truth[i].begin(), ground_truth[i].end());
+        for (size_t j = 0; j < predictions[i].size(); ++j) {
+            size_t predicted_index = predictions[i][j];
+            if(index_map.find(predicted_index) == index_map.end()){
+                std::runtime_error("error, index_map don't contain indice");
+            }
+            if(predicted_index<2340373 || predicted_index > (2340373 - 1)*2){
+                std::runtime_error("error, index_map don't contain indice");
+            }
+            predicted_index = index_map.at(predicted_index);
+            if (true_set.find(predicted_index) != true_set.end()) {
+                hit_count++;
+            }
+        }
+    }
+    return static_cast<float>(hit_count) / (ground_truth.size() * ground_truth[0].size());
+}
+
+
+std::vector<std::vector<double>> util::countRecallWithDiffPara(hnswlib::HierarchicalNSW<float>& index,
                                                  const std::vector<std::vector<float>> &queries,
                                                  std::vector<std::vector<size_t>> ground_truth,
                                                  std::unordered_map<size_t, size_t> index_map,
@@ -425,8 +447,9 @@ std::vector<std::vector<float>> util::countRecallWithDiffPara(hnswlib::Hierarchi
                                                  int start_ef,
                                                  int end_ef,
                                                  int step,
-                                                 int num_threads) {
-    std::vector<std::vector<float>> recall_and_time_values;
+                                                 int num_threads,
+                                                 int data_siz) {
+    std::vector<std::vector<double>> recall_and_time_values;
 
     for (int ef = start_ef; ef <= end_ef; ef += step) {
         index.setEf(ef);  // 设置HNSW的ef参数
@@ -437,12 +460,14 @@ std::vector<std::vector<float>> util::countRecallWithDiffPara(hnswlib::Hierarchi
         query_hnsw(index, queries, k, num_threads, predictions);
         auto end_time = std::chrono::high_resolution_clock::now();
 
-        std::chrono::duration<float> query_duration = end_time - start_time;
-        float query_time_in_seconds = query_duration.count();
+        auto query_duration = std::chrono::duration<double>(end_time - start_time).count();
 
-        float recall = recall_score(ground_truth, predictions, index_map, queries.size());
+        double avg_query_time = query_duration / (double)queries.size();
 
-        recall_and_time_values.push_back({recall, query_time_in_seconds});
+//        double recall = recall_score_end_recall(ground_truth, predictions, index_map);
+        double recall = recall_score(ground_truth, predictions, index_map,data_siz);
+
+        recall_and_time_values.push_back({recall, avg_query_time});
     }
 
     return recall_and_time_values;

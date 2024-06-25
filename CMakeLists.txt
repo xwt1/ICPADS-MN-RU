@@ -122,6 +122,7 @@ target_link_libraries(test_query_mark_gist PRIVATE hnswlib)
 
 #compute_ground_truth
 target_link_libraries(compute_netflix_groundtruth PRIVATE hnswlib)
+target_link_libraries(compute_imageNet2M_groundtruth PRIVATE hnswlib)
 
 # generate the index
 target_link_libraries(hnsw_maintenance_generate_sift_index PRIVATE maintenance_hnswlib)
@@ -199,3 +200,7 @@ target_link_libraries(replaced_update_new_insert_sift_2M PRIVATE hnswlib)
 target_link_libraries(end_recall_full_coverage PRIVATE hnswlib)
 target_link_libraries(end_recall_random PRIVATE hnswlib)
 target_link_libraries(end_recall_new_insert PRIVATE hnswlib)
+target_link_libraries(end_recall_gist_full_coverage PRIVATE hnswlib)
+target_link_libraries(end_recall_gist_random PRIVATE hnswlib)
+target_link_libraries(end_recall_imageNet_2M_full_coverage PRIVATE hnswlib)
+target_link_libraries(end_recall_imageNet_2M_random PRIVATE hnswlib)
