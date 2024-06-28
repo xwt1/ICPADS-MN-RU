@@ -5,8 +5,8 @@ import os
 
 def plot_unreachable_points(csv_files, colors, markers, labels, output_path):
     # 设置图表尺寸和DPI
-    plt.rcParams['font.size'] = 14
-    plt.rcParams['font.weight'] = 'bold'
+    plt.rcParams['font.size'] = 28
+    # plt.rcParams['font.weight'] = 'bold'
 
     # 创建图表
     fig, ax = plt.subplots(figsize=(12, 6), dpi=300)
@@ -26,10 +26,11 @@ def plot_unreachable_points(csv_files, colors, markers, labels, output_path):
     # 设置图表标签和标题
     ax.set_xlabel('Iteration Number')
     ax.set_ylabel('Unreachable Points Number')
-    ax.set_title('Unreachable Points Number Over Iterations')
-    ax.legend(prop={'size': 10, 'weight': 'bold'})
+    # ax.set_title('Unreachable Points Number Over Iterations')
+    ax.yaxis.label.set_position((ax.yaxis.label.get_position()[0], 0.4))
     ax.grid(True, linestyle='--', color='grey', linewidth=0.5)
-
+    # 设置图例并放置到图表下方
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, prop={'size': 28})
     # 保存图表
     fig.savefig(output_path, bbox_inches='tight')
 

@@ -305,6 +305,11 @@ add_executable(compute_sift_groundtruth compute_groundtruth/compute_sift_groundt
                                                 util/util.cpp
         util/thread_pool.cpp)
 
+# Back Up Index Build
+add_executable(back_up_edge_connected_9 replaced_update_vaild/back_up_index_compare/gist/edge_connected_9.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
 # test
 add_executable(test_query_direct_gist test/C++/test_query_direct_gist.cpp
                                                 util/util.cpp

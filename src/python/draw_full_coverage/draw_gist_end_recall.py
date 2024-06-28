@@ -5,8 +5,8 @@ import os
 
 def plot_recall_vs_query_time(csv_files, colors, markers, labels, output_path):
     # 设置图表尺寸和DPI
-    plt.rcParams['font.size'] = 14
-    plt.rcParams['font.weight'] = 'bold'
+    plt.rcParams['font.size'] = 28
+    # plt.rcParams['font.weight'] = 'bold'
 
     # 创建图表
     fig, ax = plt.subplots(figsize=(12, 6), dpi=300)
@@ -20,16 +20,22 @@ def plot_recall_vs_query_time(csv_files, colors, markers, labels, output_path):
         # 读取CSV文件
         df = pd.read_csv(csv_file)
 
+        # 将Update Time从秒转换为毫秒
+        df['query_time'] *= 1000
+        # 将recall转为百分比计数
+        df['recall'] *= 100
+
         # 绘制折线图，每隔5个点绘制一个点，点的大小为5
-        ax.plot(df['query_time'], df['recall'], linestyle='-', color=color, marker=marker, label=label, markevery=5, markersize=5)
+        ax.plot(df['query_time'], df['recall'], linestyle='-', color=color, marker=marker, label=label)
 
     # 设置图表标签和标题
-    ax.set_xlabel('Query Time')
-    ax.set_ylabel('Recall')
-    ax.set_title('Recall vs Query Time')
-    ax.legend(prop={'size': 10, 'weight': 'bold'})
+    ax.set_xlabel('Query Time (ms)')
+    ax.set_ylabel('Recall (%)')
+    # ax.set_title('Recall vs Query Time')
+    # ax.legend(prop={'size': 10, 'weight': 'bold'})
     ax.grid(True, linestyle='--', color='grey', linewidth=0.5)
-
+    # 设置图例并放置到图表下方
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, prop={'size': 28})
     # 保存图表
     fig.savefig(output_path, bbox_inches='tight')
 

@@ -58,8 +58,8 @@ import os
 
 def plot_replaced_update_time(csv_files, colors, markers, labels, output_path):
     # 设置图表尺寸和DPI
-    plt.rcParams['font.size'] = 14
-    plt.rcParams['font.weight'] = 'bold'
+    plt.rcParams['font.size'] = 28
+    # plt.rcParams['font.weight'] = 'bold'
 
     # 创建图表
     fig, ax = plt.subplots(figsize=(12, 6), dpi=300)
@@ -73,16 +73,20 @@ def plot_replaced_update_time(csv_files, colors, markers, labels, output_path):
         # 读取CSV文件
         df = pd.read_csv(csv_file)
 
+        # 将Update Time从秒转换为毫秒
+        df['avg_sum_delete_add_time'] *= 1000
+
         # 绘制折线图，每隔5个点绘制一个点，点的大小为5
         ax.plot(df['iteration_number'], df['avg_sum_delete_add_time'], linestyle='-', color=color, marker=marker, label=label, markevery=5, markersize=5)
 
     # 设置图表标签和标题
     ax.set_xlabel('Iteration Number')
-    ax.set_ylabel('Replaced Update Time')
-    ax.set_title('Replaced Update Time Over Iterations')
-    ax.legend(prop={'size': 10, 'weight': 'bold'})
+    ax.set_ylabel('Update Time (ms)')
+    # ax.set_title('Replaced Update Time Over Iterations')
+    # ax.legend(prop={'size': 10, 'weight': 'bold'})
     ax.grid(True, linestyle='--', color='grey', linewidth=0.5)
-
+    # 设置图例并放置到图表下方
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, prop={'size': 28})
     # 保存图表
     fig.savefig(output_path, bbox_inches='tight')
 

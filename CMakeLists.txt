@@ -204,3 +204,6 @@ target_link_libraries(end_recall_gist_full_coverage PRIVATE hnswlib)
 target_link_libraries(end_recall_gist_random PRIVATE hnswlib)
 target_link_libraries(end_recall_imageNet_2M_full_coverage PRIVATE hnswlib)
 target_link_libraries(end_recall_imageNet_2M_random PRIVATE hnswlib)
+
+# Back Up Index build
+target_link_libraries(back_up_edge_connected_9 PRIVATE hnswlib)
