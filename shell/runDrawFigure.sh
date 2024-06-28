@@ -39,6 +39,12 @@ programs=(
   "/draw_random/draw_gist_end_recall.py"
   "/draw_random/draw_imageNet_2M_end_recall.py"
 
+  "/draw_figure1/draw_figure1.py"
+
+  "/draw_figure2/draw_figure2_extream.py"
+  "/draw_figure2/draw_figure2_extream_recall.py"
+
+  "/draw_backup/draw_backup.py"
 )
 
 log_files=(
@@ -64,6 +70,13 @@ log_files=(
 
       "random_draw_gist_end_recall.log"
       "random_draw_imageNet_2M_end_recall.log"
+
+      "draw_figure1.log"
+
+      "draw_figure2_extream.log"
+      "draw_figure2_extream_recall.log"
+
+      "draw_backup.log"
 )
 
 # Start programs sequentially and redirect logs

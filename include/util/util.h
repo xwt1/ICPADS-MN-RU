@@ -57,7 +57,6 @@ public:
 
     static float recall_score_end_recall(const std::vector<std::vector<size_t>>& ground_truth, const std::vector<std::vector<size_t>>& predictions, const std::unordered_map<size_t, size_t>& index_map);
 
-
     /*
      * stamp : ef增长间隔
      */
@@ -71,6 +70,17 @@ public:
                                                        int stamp,
                                                        int num_threads,
                                                        int data_siz);
+
+    static size_t dual_search_validation(hnswlib::HierarchicalNSW<float>& main_index,
+                                         std::unique_ptr<hnswlib::HierarchicalNSW<float>>& backup_index,
+                                         size_t data_siz,
+                                         std::vector<std::vector<float>> queries);
+
+    static void backup_index_build(
+            hnswlib::L2Space &space,
+            std::unique_ptr<hnswlib::HierarchicalNSW<float>>& backup_index,
+            const std::vector<std::vector<float>>& data,
+            std::vector<size_t> global_labels);
 
 
     template<class Function>

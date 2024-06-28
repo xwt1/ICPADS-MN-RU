@@ -14,8 +14,7 @@ def main(root_path):
     df_sampled = df[::10]
 
     # 全局设置字体属性
-    plt.rcParams['font.size'] = 14
-    plt.rcParams['font.weight'] = 'bold'
+    plt.rcParams['font.size'] = 20
 
     # 设置图表尺寸和DPI
     fig, ax = plt.subplots(figsize=(10, 6), dpi=300)
@@ -28,10 +27,10 @@ def main(root_path):
     ax.set_xlabel('Iteration Number')
     ax.set_ylabel('RECALL')
     ax.set_title('RECALL Over Iterations')
-    ax.legend(prop={'size': 12, 'weight': 'bold'})
+    ax.legend(prop={'size': 20})
 
-    # 设置刻度标签字体加粗
-    ax.tick_params(axis='both', which='major', labelsize=12, width=1, length=5)
+    # 设置刻度标签字体大小
+    ax.tick_params(axis='both', which='major', labelsize=20, width=1, length=5)
 
     # 添加网格线
     ax.grid(True, linestyle='--', color='grey', linewidth=0.5)

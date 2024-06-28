@@ -473,6 +473,55 @@ std::vector<std::vector<double>> util::countRecallWithDiffPara(hnswlib::Hierarch
     return recall_and_time_values;
 }
 
+size_t util::dual_search_validation(hnswlib::HierarchicalNSW<float>& main_index,
+                                    std::unique_ptr<hnswlib::HierarchicalNSW<float>>& backup_index,
+                                                size_t data_siz,
+                                                std::vector<std::vector<float>> queries){
+    std::vector<std::vector<size_t>> main_index_labels;
+    std::vector<std::vector<size_t>> backup_index_labels;
+    queries.resize(1);
+    util::query_hnsw(main_index, queries, main_index.cur_element_count, 1, main_index_labels);
+    util::query_hnsw(*backup_index.get(), queries, backup_index->cur_element_count, 1, backup_index_labels);
+//    std::cout<<"main_index_labels_before_size: "<<main_index_labels[0].size()<<std::endl;
+//    std::cout<<"backup_index_labels_before_size: "<<backup_index_labels[0].size()<<std::endl;
+    for(auto &i:main_index_labels[0]){
+        if(i >= data_siz){
+            i -= data_siz;
+        }
+    }
+    for(auto &i:backup_index_labels[0]){
+        if(i >= data_siz){
+            i -= data_siz;
+        }
+    }
+//    std::cout<<"main_index_labels_after_size: "<<main_index_labels[0].size()<<std::endl;
+//    std::cout<<"backup_index_labels_after_size: "<<backup_index_labels[0].size()<<std::endl;
+    std::unordered_set<size_t> foundable_points;
+    foundable_points.insert(main_index_labels[0].begin(), main_index_labels[0].end());
+    foundable_points.insert(backup_index_labels[0].begin(), backup_index_labels[0].end());
+//    std::cout<<"main_index_labels[0].size() + backup_index_labels[0].size(): "<< main_index_labels[0].size() + backup_index_labels[0].size() <<std::endl;
+//    std::cout<<"foundable_points.size(): "<< foundable_points.size() <<std::endl;
+//    return main_index_labels[0].size() + backup_index_labels[0].size();
+    return foundable_points.size();
+}
+
+void util::backup_index_build(
+        hnswlib::L2Space &space,
+        std::unique_ptr<hnswlib::HierarchicalNSW<float>>& backup_index,
+        const std::vector<std::vector<float>>& data,
+        std::vector<size_t> global_labels
+                               ){
+    auto new_backup_index = std::make_unique<hnswlib::HierarchicalNSW<float>>(&space, global_labels.size(), backup_index->M_, backup_index->ef_construction_);
+    ParallelFor(0, global_labels.size(), 40, [&](size_t i, size_t) {
+        new_backup_index->addPoint(data[i].data(), global_labels[i]);
+    });
+//    std::cout<<"backup_index_build_cur_element_count: "<<new_backup_index->cur_element_count<<std::endl;
+//    for(auto &i : global_labels){
+//        new_backup_index->addPoint(,i);
+//    }
+    backup_index = std::move(new_backup_index);
+
+}
 
 
 //std::string util::readJsonFile(const std::string& filename, const std::string& key) {

@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 
-def plot_recall_vs_query_time(csv_files, colors, markers, labels, output_path):
+
+def plot_unreachable_points(csv_files, colors, markers, labels, output_path):
     # 设置图表尺寸和DPI
     plt.rcParams['font.size'] = 28
     # plt.rcParams['font.weight'] = 'bold'
@@ -20,19 +21,15 @@ def plot_recall_vs_query_time(csv_files, colors, markers, labels, output_path):
         # 读取CSV文件
         df = pd.read_csv(csv_file)
 
-        # 将Update Time从秒转换为毫秒
-        df['query_time'] *= 1000
-        # 将recall转为百分比计数
-        df['recall'] *= 100
-
         # 绘制折线图，每隔5个点绘制一个点，点的大小为5
-        ax.plot(df['query_time'], df['recall'], linestyle='-', color=color, marker=marker, label=label)
+        ax.plot(df['iteration_number'], df['unreachable_points_number'], linestyle='-', color=color, marker=marker,
+                label=label, markevery=5, markersize=5)
 
     # 设置图表标签和标题
-    ax.set_xlabel('Query Time (ms)')
-    ax.set_ylabel('Recall (%)')
-    # ax.set_title('Recall vs Query Time')
-    # ax.legend(prop={'size': 10, 'weight': 'bold'})
+    ax.set_xlabel('Iteration Number')
+    ax.set_ylabel('Unreachable Points Number')
+    # ax.set_title('Unreachable Points Number Over Iterations')
+    ax.yaxis.label.set_position((ax.yaxis.label.get_position()[0], 0.4))
     ax.grid(True, linestyle='--', color='grey', linewidth=0.5)
     # 设置图例并放置到图表下方
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), ncol=3, prop={'size': 28})
@@ -42,31 +39,31 @@ def plot_recall_vs_query_time(csv_files, colors, markers, labels, output_path):
     # 显示图表
     plt.show()
 
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Generate line chart from CSV data for recall vs query time.')
+    parser = argparse.ArgumentParser(description='Generate line chart from CSV data for unreachable points number.')
     parser.add_argument('root_path', type=str, help='Root path for input CSV files and output images')
     args = parser.parse_args()
 
     # 定义CSV文件的根目录和图像的输出路径
-    csv_dir = os.path.join(args.root_path, 'output', 'random', 'gist')
-    output_path = os.path.join(args.root_path, 'output', 'random', 'gist', 'random_gist_1M_end_recall.png')
+
+    csv_dir_backup = os.path.join(args.root_path, 'output', 'back_up_index', 'gist')
+    csv_dir = os.path.join(args.root_path, 'output', 'full_coverage', 'gist')
+    output_path = os.path.join(args.root_path, 'output', 'back_up_index', 'gist', 'back_up_gist_unreachable_points.png')
 
     # 手动编码的CSV文件名列表
-    csv_files = [
-        'edge_connected_9_end_recall_gist_1M.csv',
-        'edge_connected_10_end_recall_gist_1M.csv',
-        'replaced_update_end_recall_gist_1M.csv'
-    ]
     # 手动编码的颜色和点的形状
-    colors = ['b', 'm', 'c']
-    markers = ['D', '^', '*']
+    colors = ['b', 'c']
+    markers = ['D', '*']
     # 手动编码的图例标签
     labels = [
-        'MN-RU γ',
-        'MN-THN-RU',
+        'MN-RU γ(back_up)',
         'HNSW-RU'
     ]
 
-    csv_file_paths = [os.path.join(csv_dir, csv_file) for csv_file in csv_files]
+    back_up_csv_file = os.path.join(csv_dir_backup, 'edge_connected_replaced_update9.csv')
+    csv_file = os.path.join(csv_dir, 'replaced_update.csv')
 
-    plot_recall_vs_query_time(csv_file_paths, colors, markers, labels, output_path)
+    csv_file_paths = [back_up_csv_file, csv_file]
+
+    plot_unreachable_points(csv_file_paths, colors, markers, labels, output_path)
