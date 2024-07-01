@@ -20,6 +20,8 @@ pip install numpy pandas matplotlib
 ```
 ## evaluation
 
+Our repository contains the results in the `./output` directory and its subdirectories. You can view them directly or run the following command to see the results.
+
 1. download datasets
 
 ```
