@@ -48,7 +48,7 @@
 //        size_t size_links_level0_{0};
 //        size_t offsetData_{0}, offsetLevel0_{0}, label_offset_{ 0 };
 //
-//        // (xwt)new add, lock internal, first dimension is the internalId, second dimension is the level
+//        // ()new add, lock internal, first dimension is the internalId, second dimension is the level
 //        std::vector<std::mutex> reverse_linklist_locks_;
 //        std::vector<std::vector<std::list<tableint>> >  reverse_linklist_;
 //
@@ -100,7 +100,7 @@
 //                bool allow_replace_deleted = false)
 //                : label_op_locks_(MAX_LABEL_OPERATION_LOCKS),
 //                  link_list_locks_(max_elements),
-//                  // (xwt)
+//                  // ()
 //                  reverse_linklist_locks_(max_elements),
 //                  element_levels_(max_elements),
 //                  allow_replace_deleted_(allow_replace_deleted) {
@@ -142,7 +142,7 @@
 //            enterpoint_node_ = -1;
 //            maxlevel_ = -1;
 //
-//            // (xwt)
+//            // ()
 ////            reverse_linklist_locks_.reserve(max_elements_);
 //            reverse_linklist_.resize(max_elements_);
 //
@@ -561,7 +561,7 @@
 //
 //                    data[idx] = selectedNeighbors[idx];
 //
-//                    // (xwt)
+//                    // ()
 //                    std::unique_lock <std::mutex> lock_rev(reverse_linklist_locks_[data[idx]]);
 //                    reverse_linklist_[data[idx]][level].push_back(cur_c);
 //
@@ -574,7 +574,7 @@
 //            for (size_t idx = 0; idx < selectedNeighbors.size(); idx++) {
 //                std::unique_lock <std::mutex> lock(link_list_locks_[selectedNeighbors[idx]]);
 //
-//                // (xwt) for thread safe
+//                // () for thread safe
 ////                std::unique_lock <std::mutex> lock_rev(reverse_linklist_locks_[cur_c]);
 //
 //                linklistsizeint *ll_other;
@@ -622,18 +622,18 @@
 //                        std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> candidates;
 //                        candidates.emplace(d_max, cur_c);
 //
-//                        // (xwt) create hash 记录所有该结点之前的邻居
+//                        // () create hash 记录所有该结点之前的邻居
 //                        std::unordered_set <tableint> temp_neighbour;
 //
 //                        for (size_t j = 0; j < sz_link_list_other; j++) {
 //                            candidates.emplace(
 //                                    fstdistfunc_(getDataByInternalId(data[j]), getDataByInternalId(selectedNeighbors[idx]),
 //                                                 dist_func_param_), data[j]);
-//                            // (xwt)
+//                            // ()
 //                            temp_neighbour.insert(data[j]);
 //                        }
 //
-//                        // (xwt)
+//                        // ()
 //                        auto temp_candidate1 = candidates;
 //                        auto temp_temp_neighbour1 = temp_neighbour;
 ////
@@ -657,7 +657,7 @@
 //                        while (candidates.size() > 0) {
 //                            data[indx] = candidates.top().second;
 //
-//                            // (xwt)
+//                            // ()
 //                            if(temp_neighbour.find(data[indx]) == temp_neighbour.end()){
 //                                // 说明出现了没出现过的邻居,大概率就是cur_c,更新其反邻接表
 //                                std::unique_lock <std::mutex> lock_rev(reverse_linklist_locks_[data[indx]]);
@@ -683,7 +683,7 @@
 //                        setListCount(ll_other, indx);
 ////                        checkTotalInOutDegreeEquality();
 //
-//                        // (xwt)
+//                        // ()
 ////                        lock_rev.unlock();
 //                        lock.unlock();
 //
@@ -704,7 +704,7 @@
 ////                            std::cout<<"确实被更新了"<<std::endl;
 ////                            std::cout<<temp_neighbour.size()<<std::endl;
 ////                            tableint delete_neigh = *(temp_neighbour.begin());
-////                            // (xwt) for thread safe
+////                            // () for thread safe
 ////                            std::unique_lock <std::mutex> lock_revs(reverse_linklist_locks_[delete_neigh]);
 ////                            auto rev_link_list = &reverse_linklist_[delete_neigh][level];
 ////                            for(auto it = rev_link_list->begin(); it != rev_link_list->end(); it++){
@@ -751,7 +751,7 @@
 //                throw std::runtime_error("Not enough memory: resizeIndex failed to allocate base layer");
 //            data_level0_memory_ = data_level0_memory_new;
 //
-//            // (xwt)Reallocate reverse_linklist
+//            // ()Reallocate reverse_linklist
 //            reverse_linklist_.resize(new_max_elements);
 //
 //            // Reallocate all other layers
@@ -821,7 +821,7 @@
 //                    output.write(linkLists_[i], linkListSize);
 //            }
 //
-//            // (xwt)Save reverse_linklist_ for each element
+//            // ()Save reverse_linklist_ for each element
 //            for (size_t i = 0; i < cur_element_count; i++) {
 //                int num_levels = element_levels_[i]; // Store number of levels for the element
 //                writeBinaryPOD(output, num_levels);
@@ -902,7 +902,7 @@
 //            size_links_per_element_ = maxM_ * sizeof(tableint) + sizeof(linklistsizeint);
 //
 //            size_links_level0_ = maxM0_ * sizeof(tableint) + sizeof(linklistsizeint);
-//            // (xwt)
+//            // ()
 //            std::vector<std::mutex>(max_elements).swap(reverse_linklist_locks_);
 //
 //            std::vector<std::mutex>(max_elements).swap(link_list_locks_);
@@ -939,7 +939,7 @@
 //                }
 //            }
 //
-//            // (xwt)
+//            // ()
 //            reverse_linklist_.resize(max_elements_);
 //            for (size_t i = 0; i < cur_element_count; i++) {
 //                int num_levels;
@@ -1149,7 +1149,7 @@
 //                        for (size_t idx = 0; idx < candSize; idx++) {
 //                            data[idx] = candidates.top().second;
 //
-//                            // (xwt)
+//                            // ()
 //                            if(prime_neighbour.find(data[idx]) ==  prime_neighbour.end()){
 //                                // 找不到,说明是新邻居
 //
@@ -1269,7 +1269,7 @@
 ////                        for (size_t idx = 0; idx < candSize; idx++) {
 ////                            data[idx] = candidates.top().second;
 ////
-////                            // (xwt)
+////                            // ()
 ////                            if(prime_neighbour.find(data[idx]) ==  prime_neighbour.end()){
 ////                                // 找不到,说明是新邻居
 ////
@@ -1450,7 +1450,7 @@
 //
 //                unmarkDeletedInternal(internal_id_replaced);
 //
-//                // (xwt)
+//                // ()
 //                int elemLevel = element_levels_[internal_id_replaced];
 //                for(int layer = 0; layer <= elemLevel ; layer ++){
 //                    std::vector<tableint> delete_ele_neighbour = getConnectionsWithLock(internal_id_replaced, layer);
@@ -1530,7 +1530,7 @@
 //            }
 //        }
 //
-//        // (xwt)
+//        // ()
 //        void getNeighborsByHeuristic2_direct_delete(
 //                std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
 //                const size_t M,
@@ -1707,7 +1707,7 @@
 //            memcpy(getExternalLabeLp(cur_c), &label, sizeof(labeltype));
 //            memcpy(getDataByInternalId(cur_c), data_point, data_size_);
 //
-//            // (xwt) lock it for a while
+//            // () lock it for a while
 //            std::unique_lock <std::mutex> lock_rev(reverse_linklist_locks_[cur_c]);
 //            reverse_linklist_[cur_c].resize(curlevel + 1);
 //            lock_rev.unlock();
@@ -3643,7 +3643,7 @@ namespace hnswlib {
             std::cout << "Total degrees Both: " << totalOutDegrees << "\n";
         }
 
-        // (xwt)
+        // ()
         void getNeighborsByHeuristic2_direct_delete(
                 std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
                 const size_t M,
