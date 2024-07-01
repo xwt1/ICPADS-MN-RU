@@ -1455,7 +1455,7 @@ namespace hnswlib {
             std::cout << "Total degrees Both: " << totalOutDegrees << "\n";
         }
 
-        // (xwt)
+        // ()
         void getNeighborsByHeuristic2_direct_delete(
                 std::priority_queue<std::pair<dist_t, tableint>, std::vector<std::pair<dist_t, tableint>>, CompareByFirst> &top_candidates,
                 const size_t M,
