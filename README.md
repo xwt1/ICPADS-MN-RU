@@ -1,4 +1,4 @@
-This repository is for ACML2024. All experiment has implemented in C++ on a PC with Intel Xeon CPU E5-2678 v3 @ 2.50GHz and 110GB memory, running Ubuntu 22.04.
+This repository is for MN-RU algorithm. All experiment has implemented in C++ on a PC with Intel Xeon CPU E5-2678 v3 @ 2.50GHz and 110GB memory, running Ubuntu 22.04.
 
 You could reproduce it with the following steps, the overall experiment may take days.
 
