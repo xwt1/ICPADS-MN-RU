@@ -1489,6 +1489,165 @@ namespace hnswlib {
                 top_candidates.emplace(-curent_pair.first, curent_pair.second);
             }
         }
+
+        void computeReciprocalNeighborRatio() {
+            std::vector<int> inbound_connections(cur_element_count, 0);   // 统计每个节点的入度（被当作邻居的次数）
+            std::vector<int> reciprocal_neighbors(cur_element_count, 0);  // 统计每个节点的互为邻居的次数
+
+            // 统计以每个节点为邻居的节点数 (入度)
+            for (tableint i = 0; i < cur_element_count; ++i) {
+                for (int level = 0; level <= element_levels_[i]; ++level) {
+                    linklistsizeint* ll_cur = get_linklist_at_level(i, level);
+                    int num_neighbors = getListCount(ll_cur);
+                    tableint* neighbors = (tableint*)(ll_cur + 1);
+
+                    for (int j = 0; j < num_neighbors; ++j) {
+                        tableint neighbor_id = neighbors[j];
+                        inbound_connections[neighbor_id]++;
+                        if(neighbor_id == 34 && level == 0){
+                            std::cout<<"所有入度"<< i << std::endl;
+                        }
+                    }
+                }
+            }
+
+            // 统计邻居中互为邻居的次数
+            for (tableint i = 0; i < cur_element_count; ++i) {
+                for (int level = 0; level <= element_levels_[i]; ++level) {
+                    linklistsizeint* ll_cur = get_linklist_at_level(i, level);
+                    int num_neighbors = getListCount(ll_cur);
+                    tableint* neighbors = (tableint*)(ll_cur + 1);
+
+                    for (int j = 0; j < num_neighbors; ++j) {
+                        tableint neighbor_id = neighbors[j];
+
+
+                        // 检查邻居 neighbor_id 的邻居列表中是否包含节点 i
+                        for (int k = 0; k <= element_levels_[neighbor_id]; ++k) {
+                            linklistsizeint* ll_neighbor = get_linklist_at_level(neighbor_id, k);
+                            int num_neighbors_neighbor = getListCount(ll_neighbor);
+                            tableint* neighbors_neighbor = (tableint*)(ll_neighbor + 1);
+
+                            for (int m = 0; m < num_neighbors_neighbor; ++m) {
+                                if (neighbors_neighbor[m] == i) {
+                                    reciprocal_neighbors[i]++;
+                                    if(i == 34 && level == 0){
+                                        std::cout<<"互为邻居"<< neighbor_id << std::endl;
+                                    }
+                                    break;  // 找到一次即可跳出
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 计算邻居比例并统计总和
+            double total_ratio = 0.0;
+            int valid_nodes = 0;  // 只统计有入度的节点
+
+            for (tableint i = 0; i < cur_element_count; ++i) {
+                int in_degree = inbound_connections[i];
+                int reciprocal_count = reciprocal_neighbors[i];
+
+                if (in_degree > 0) {
+                    double ratio = static_cast<double>(reciprocal_count) / in_degree;
+                    total_ratio += ratio;
+                    valid_nodes++;
+//                    std::cout << "Node " << i << ": Reciprocal Neighbors = " << reciprocal_count
+//                              << ", Inbound Neighbors = " << in_degree
+//                              << ", Ratio = " << ratio << std::endl;
+                } else {
+//                    std::cout << "Node " << i << ": No inbound neighbors." << std::endl;
+                }
+            }
+
+            // 计算平均 ratio
+            if (valid_nodes > 0) {
+                double average_ratio = total_ratio / valid_nodes;
+                std::cout << "Average Ratio: " << average_ratio << std::endl;
+            } else {
+                std::cout << "No valid nodes with inbound neighbors to calculate average ratio." << std::endl;
+            }
+        }
+
+
+        void computeReciprocalNeighborRatioForLevel0() {
+            std::vector<int> inbound_connections(cur_element_count, 0);   // 统计每个节点的入度（被当作邻居的次数）
+            std::vector<int> reciprocal_neighbors(cur_element_count, 0);  // 统计每个节点的互为邻居的次数
+
+            // 统计以每个节点为邻居的节点数 (入度) 仅针对第零层
+            for (tableint i = 0; i < cur_element_count; ++i) {
+                linklistsizeint* ll_cur = get_linklist0(i);  // 只获取第零层的链接列表
+                int num_neighbors = getListCount(ll_cur);
+                tableint* neighbors = (tableint*)(ll_cur + 1);
+
+                for (int j = 0; j < num_neighbors; ++j) {
+                    tableint neighbor_id = neighbors[j];
+                    inbound_connections[neighbor_id]++;  // 记录邻居被引用的次数（即入度）
+                }
+            }
+
+            // 统计邻居中互为邻居的次数，仅针对第零层
+            for (tableint i = 0; i < cur_element_count; ++i) {
+                linklistsizeint* ll_cur = get_linklist0(i);  // 获取第零层的邻居列表
+                int num_neighbors = getListCount(ll_cur);
+                tableint* neighbors = (tableint*)(ll_cur + 1);
+
+                for (int j = 0; j < num_neighbors; ++j) {
+                    tableint neighbor_id = neighbors[j];
+
+                    // 检查邻居 neighbor_id 的第零层邻居列表中是否包含节点 i
+                    linklistsizeint* ll_neighbor = get_linklist0(neighbor_id);  // 获取邻居的第零层
+                    int num_neighbors_neighbor = getListCount(ll_neighbor);
+                    tableint* neighbors_neighbor = (tableint*)(ll_neighbor + 1);
+
+                    for (int m = 0; m < num_neighbors_neighbor; ++m) {
+                        if (neighbors_neighbor[m] == i) {
+                            reciprocal_neighbors[i]++;  // 如果邻居也将自己作为邻居，计数加1
+                            break;  // 找到一次即可跳出
+                        }
+                    }
+                }
+            }
+
+            // 计算邻居比例并统计总和
+            double total_ratio = 0.0;
+            int valid_nodes = 0;  // 只统计有入度的节点
+
+            for (tableint i = 0; i < cur_element_count; ++i) {
+                int in_degree = inbound_connections[i];
+                int reciprocal_count = reciprocal_neighbors[i];
+
+
+
+                if (in_degree > 0) {
+                    double ratio = static_cast<double>(reciprocal_count) / in_degree;
+
+                    if(i == 34){
+                        std::cout<<"in_degree"<<in_degree<<std::endl;
+                        std::cout<<"reciprocal_count" << reciprocal_count << std::endl;
+                        std::cout<<"ratio" << ratio << std::endl;
+                    }
+
+                    total_ratio += ratio;
+                    valid_nodes++;
+//                    std::cout << "Node " << i << ": Reciprocal Neighbors = " << reciprocal_count
+//                              << ", Inbound Neighbors = " << in_degree
+//                              << ", Ratio = " << ratio << std::endl;
+                } else {
+//                    std::cout << "Node " << i << ": No inbound neighbors." << std::endl;
+                }
+            }
+
+            // 计算平均 ratio
+            if (valid_nodes > 0) {
+                double average_ratio = total_ratio / valid_nodes;
+                std::cout << "Average Ratio for Level 0: " << average_ratio << std::endl;
+            } else {
+                std::cout << "No valid nodes with inbound neighbors to calculate average ratio." << std::endl;
+            }
+        }
     };
 
 

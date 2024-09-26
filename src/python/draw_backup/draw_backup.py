@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     csv_dir_backup = os.path.join(args.root_path, 'output', 'back_up_index', 'gist')
     csv_dir = os.path.join(args.root_path, 'output', 'full_coverage', 'gist')
-    output_path = os.path.join(args.root_path, 'output', 'back_up_index', 'gist', 'back_up_gist_unreachable_points.png')
+    output_path = os.path.join(args.root_path, 'output', 'back_up_index', 'gist', 'back_up_gist_unreachable_points.pdf')
 
     # 手动编码的CSV文件名列表
     # 手动编码的颜色和点的形状

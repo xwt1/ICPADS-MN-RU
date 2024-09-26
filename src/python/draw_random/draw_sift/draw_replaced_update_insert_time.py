@@ -99,7 +99,7 @@ if __name__ == "__main__":
 
     # 定义CSV文件的根目录和图像的输出路径
     csv_dir = os.path.join(args.root_path, 'output', 'random', 'sift')
-    output_path = os.path.join(args.root_path, 'output', 'random', 'sift', 'replaced_update_time_plot.png')
+    output_path = os.path.join(args.root_path, 'output', 'random', 'sift', 'replaced_update_time_plot.pdf')
 
     # 手动编码的CSV文件名列表
     csv_files = [
@@ -107,18 +107,20 @@ if __name__ == "__main__":
         'edge_connected_8.csv',
         'edge_connected_9.csv',
         'edge_connected_10.csv',
+        'faiss_replaced_update.csv',
         'replaced_update.csv'
     ]
     # 手动编码的颜色和点的形状
-    colors = ['r', 'g', 'b', 'm', 'c']
-    markers = ['o', 's', 'D', '^', '*']
+    colors = ['r', 'g', 'b', 'm', 'c', 'y']  # 添加了一个额外的颜色'y'（黄色）
+    markers = ['o', 's', 'D', '^', '*', 'p']  # 添加了一个额外的标记'p'（六边形）
     # 手动编码的图例标签
     labels = [
         'MN-RU α',
         'MN-RU β',
         'MN-RU γ',
         'MN-THN-RU',
-        'HNSW-RU'
+        'IVF-FLAT'
+        'HNSW-RU',
     ]
 
     csv_file_paths = [os.path.join(csv_dir, csv_file) for csv_file in csv_files]

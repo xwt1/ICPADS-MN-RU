@@ -40,6 +40,9 @@ add_executable(compute_imageNet2M_groundtruth compute_groundtruth/compute_imageN
         util/util.cpp
         util/thread_pool.cpp)
 
+add_executable(compute_word2vec_groundtruth compute_groundtruth/compute_groundtruth_word2vec.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 # generate the index
 add_executable(hnsw_maintenance_generate_sift_index generate_index/hnsw_maintenance/generate_sift_index.cpp
@@ -57,6 +60,10 @@ add_executable(hnsw_prime_generate_gist_index generate_index/hnsw_prime/generate
 add_executable(hnsw_maintenance_generate_imageNet_index generate_index/hnsw_maintenance/generate_imageNet_index.cpp
         util/util.cpp
         util/thread_pool.cpp)
+add_executable(hnsw_maintenance_generate_imageNet_index_2 generate_index/hnsw_maintenance/generate_imageNet_index_test.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
 add_executable(hnsw_prime_generate_imageNet_index generate_index/hnsw_prime/generate_imageNet_index.cpp
         util/util.cpp
         util/thread_pool.cpp)
@@ -71,6 +78,34 @@ add_executable(hnsw_prime_generate_netflix_index generate_index/hnsw_prime/gener
         util/util.cpp
         util/thread_pool.cpp)
 
+add_executable(hnsw_maintenance_generate_msong_index generate_index/hnsw_maintenance/generate_msong_index.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(hnsw_maintenance_generate_word_vec_index generate_index/hnsw_maintenance/generate_word_vec_index.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(faiss_generate_index_gist generate_index/faiss/gist/generate_index.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(faiss_generate_index_sift generate_index/faiss/sift/generate_index.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(faiss_generate_index_imageNet generate_index/faiss/imageNet/generate_index.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(faiss_generate_index_sift2M generate_index/faiss/sift2M/generate_index.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(faiss_generate_index_word2vec generate_index/faiss/word2vec/generate_index.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
 # generate random indice
 add_executable(generate_gist_random_data replaced_update_vaild/compare_edge_connect_with_prime_random/gist/generate_random.cpp
         util/util.cpp
@@ -81,7 +116,9 @@ add_executable(generate_imageNet_random_data replaced_update_vaild/compare_edge_
 add_executable(generate_sift_random_data replaced_update_vaild/compare_edge_connect_with_prime_random/sift/generate_random.cpp
         util/util.cpp
         util/thread_pool.cpp)
-
+add_executable(generate_sift100M_random_data replaced_update_vaild/Sift100M/random/generate_random.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 
 # full_coverage:
@@ -118,6 +155,37 @@ add_executable(replaced_update_full_coverage_gist replaced_update_vaild/compare_
         util/util.cpp
         util/thread_pool.cpp)
 
+add_executable(faiss_full_coverage_gist replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/gist/faiss_ivf_flat.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(faiss_full_coverage_imageNet replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet/faiss_ivf_flat.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(faiss_full_coverage_sift replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/sift/faiss_ivf_flat.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(faiss_full_coverage_word2vec replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/word2vec/faiss_ivf_flat.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+
+add_executable(edge_connected_replaced_update_7_full_coverage_word2vec replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/word2vec/edge_connected_7.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_8_full_coverage_word2vec replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/word2vec/edge_connected_8.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_9_full_coverage_word2vec replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/word2vec/edge_connected_9.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_10_full_coverage_word2vec replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/word2vec/edge_connected_10.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(replaced_update_full_coverage_word2vec replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/word2vec/replaced_update.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+
 add_executable(edge_connected_replaced_update_7_full_coverage_imageNet replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet/edge_connected_7.cpp
         util/util.cpp
         util/thread_pool.cpp)
@@ -133,6 +201,25 @@ add_executable(edge_connected_replaced_update_10_full_coverage_imageNet replaced
 add_executable(replaced_update_full_coverage_imageNet replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet/replaced_update.cpp
         util/util.cpp
         util/thread_pool.cpp)
+
+
+add_executable(edge_connected_replaced_update_7_full_coverage_imageNet2 replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet2/edge_connected_7.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_8_full_coverage_imageNet2 replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet2/edge_connected_8.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_9_full_coverage_imageNet2 replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet2/edge_connected_9.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_10_full_coverage_imageNet2 replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet2/edge_connected_10.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(replaced_update_full_coverage_imageNet2 replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet2/replaced_update.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+
 
 add_executable(replaced_update_full_coverage_netflix replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/netflix/replaced_update.cpp
         util/util.cpp
@@ -159,6 +246,10 @@ add_executable(edge_connected_replaced_update_10_random_sift replaced_update_vai
 add_executable(replaced_update_random_sift replaced_update_vaild/compare_edge_connect_with_prime_random/sift/replaced_update.cpp
         util/util.cpp
         util/thread_pool.cpp)
+add_executable(faiss_random_sift replaced_update_vaild/compare_edge_connect_with_prime_random/sift/faiss_ivf_flat.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
 
 add_executable(edge_connected_replaced_update_7_random_gist replaced_update_vaild/compare_edge_connect_with_prime_random/gist/edge_connected_7.cpp
         util/util.cpp
@@ -173,6 +264,9 @@ add_executable(edge_connected_replaced_update_10_random_gist replaced_update_vai
         util/util.cpp
         util/thread_pool.cpp)
 add_executable(replaced_update_random_gist replaced_update_vaild/compare_edge_connect_with_prime_random/gist/replaced_update.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(faiss_random_gist replaced_update_vaild/compare_edge_connect_with_prime_random/gist/faiss_ivf_flat.cpp
         util/util.cpp
         util/thread_pool.cpp)
 
@@ -191,6 +285,9 @@ add_executable(edge_connected_replaced_update_10_random_imageNet replaced_update
 add_executable(replaced_update_random_imageNet replaced_update_vaild/compare_edge_connect_with_prime_random/imageNet/replaced_update.cpp
         util/util.cpp
         util/thread_pool.cpp)
+add_executable(faiss_random_imageNet replaced_update_vaild/compare_edge_connect_with_prime_random/imageNet/faiss_ivf_flat.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 # insert new data
 add_executable(edge_connected_replaced_update_7_new_insert_sift_2M replaced_update_vaild/compare_edge_connect_with_prime_new_insert/sift_2M/edge_connected_7.cpp
@@ -206,6 +303,9 @@ add_executable(edge_connected_replaced_update_10_new_insert_sift_2M replaced_upd
         util/util.cpp
         util/thread_pool.cpp)
 add_executable(replaced_update_new_insert_sift_2M replaced_update_vaild/compare_edge_connect_with_prime_new_insert/sift_2M/replaced_update.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(faiss_full_coverage_sift2M replaced_update_vaild/compare_edge_connect_with_prime_new_insert/sift_2M/faiss_ivf_flat.cpp
         util/util.cpp
         util/thread_pool.cpp)
 
@@ -232,8 +332,38 @@ add_executable(end_recall_imageNet_2M_full_coverage replaced_update_vaild/compar
 add_executable(end_recall_imageNet_2M_random replaced_update_vaild/compare_edge_connect_with_prime_random/end_recall_imageNet2M.cpp
         util/util.cpp
         util/thread_pool.cpp)
+add_executable(end_recall_faiss_gist replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/gist/end_recall_faiss_gist.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_faiss_imageNet2M replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet/end_recall_faiss_imageNet2M.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_faiss_sift replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/sift/end_recall_faiss_sift.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_faiss_word2vec_full_coverage replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/word2vec/end_recall_faiss_word2vec.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(end_recall_faiss_gist_random replaced_update_vaild/compare_edge_connect_with_prime_random/end_recall_faiss_gist.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_faiss_imageNet_random replaced_update_vaild/compare_edge_connect_with_prime_random/end_recall_faiss_imageNet.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_faiss_sift_random replaced_update_vaild/compare_edge_connect_with_prime_random/end_recall_faiss_sift.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 
+
+# count end recall
+add_executable(end_recall_full_coverage_imageNet2 replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/imageNet2/end_recall.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_full_coverage_word2vec replaced_update_vaild/compare_edge_connect_with_prime_full_coverage/word2vec/end_recall_word2vec.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 
 # compare the qurey and insert and prove unreachable_points_phenomenon
@@ -305,6 +435,29 @@ add_executable(compute_sift_groundtruth compute_groundtruth/compute_sift_groundt
                                                 util/util.cpp
         util/thread_pool.cpp)
 
+# Sift100M
+add_executable(edge_connected_replaced_update_7_full_coverage_sift100M replaced_update_vaild/Sift100M/full_coverage/edge_connected_7.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_8_full_coverage_sift100M replaced_update_vaild/Sift100M/full_coverage/edge_connected_8.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_9_full_coverage_sift100M replaced_update_vaild/Sift100M/full_coverage/edge_connected_9.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_10_full_coverage_sift100M replaced_update_vaild/Sift100M/full_coverage/edge_connected_10.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(replaced_update_full_coverage_sift100M replaced_update_vaild/Sift100M/full_coverage/replaced_update.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(faiss_full_coverage_sift100M replaced_update_vaild/Sift100M/full_coverage/faiss_ivf_flat.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+
+
+
 # Back Up Index Build
 add_executable(back_up_edge_connected_9 replaced_update_vaild/back_up_index_compare/gist/edge_connected_9.cpp
         util/util.cpp
@@ -317,10 +470,21 @@ add_executable(test_query_direct_gist test/C++/test_query_direct_gist.cpp
 add_executable(test_query_mark_gist test/C++/test_query_mark_gist.cpp
                                                 util/util.cpp
         util/thread_pool.cpp)
-
-
-
-
+add_executable(test_degree_percentage_sift test/C++/test_degree_percentage_sift.cpp
+                                                util/util.cpp
+        util/thread_pool.cpp)
+add_executable(test_degree_percentage_gist test/C++/test_degree_percentage_gist.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(test_degree_percentage_imageNet test/C++/test_degree_percentage_imageNet.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(test_degree_percentage_msong test/C++/test_degree_percentage_msong.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(test_degree_percentage_word_vec test/C++/test_degree_percentage_word_vec.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 #add_executable(delete_update_lose_recall issue_statement/delete_update_lose_recall.cpp)
 #add_executable(compute_delete_update issue_statement/compute_delete_update.cpp)

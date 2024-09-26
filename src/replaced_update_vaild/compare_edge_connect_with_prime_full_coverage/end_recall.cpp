@@ -121,7 +121,9 @@ int main(int argc, char* argv[]){
         std::vector<std::vector<float>> queries = util::load_fvecs(query_path, dim, num_queries);
         size_t data_siz = data.size();
         int k = 100;
-
+        if(data_siz == 2340373){
+            k = 10;
+        }
         std::vector<std::vector<size_t>> ground_truth = util::load_ivecs_indices(ground_truth_path);
         std::unordered_map<size_t, size_t> index_map;
         for (size_t i = 0; i < num_data; ++i) {
@@ -134,10 +136,18 @@ int main(int argc, char* argv[]){
         hnswlib::HierarchicalNSW<float> index(&space, index_path, false, data_siz, true);
         std::cout << "索引加载完毕 " << std::endl;
 
-        int start_ef = 50;
-        int end_ef = 1000;
-        int step = 50;
+        int start_ef = 100;
+        int end_ef = 2000;
+        int step = 100;
         int num_threads = 40;
+
+
+
+        if(data_siz == 2340373){
+            start_ef =600;
+            end_ef = 10000;
+        }
+
 
 
         std::vector<std::vector<double>> recall_time_vector = util::countRecallWithDiffPara(index,queries,ground_truth,index_map,k,start_ef,end_ef,step,num_threads,data_siz);

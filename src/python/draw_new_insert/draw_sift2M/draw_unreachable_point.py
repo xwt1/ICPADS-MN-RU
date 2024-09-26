@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     # 定义CSV文件的根目录和图像的输出路径
     csv_dir = os.path.join(args.root_path, 'output', 'new_insert', 'sift_2M')
-    output_path = os.path.join(args.root_path, 'output', 'new_insert', 'sift_2M', 'unreachable_points_number_plot.png')
+    output_path = os.path.join(args.root_path, 'output', 'new_insert', 'sift_2M', 'unreachable_points_number_plot.pdf')
 
     # 手动编码的CSV文件名列表
     csv_files = [

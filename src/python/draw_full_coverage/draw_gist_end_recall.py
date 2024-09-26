@@ -49,22 +49,24 @@ if __name__ == "__main__":
 
     # 定义CSV文件的根目录和图像的输出路径
     csv_dir = os.path.join(args.root_path, 'output', 'full_coverage', 'gist')
-    output_path = os.path.join(args.root_path, 'output', 'full_coverage', 'gist', 'full_coverage_gist_1M_end_recall.png')
+    output_path = os.path.join(args.root_path, 'output', 'full_coverage', 'gist', 'full_coverage_gist_1M_end_recall.pdf')
 
     # 手动编码的CSV文件名列表
     csv_files = [
         'edge_connected_replaced_update9_end_recall_gist_1M.csv',
         'edge_connected_replaced_update10_end_recall_gist_1M.csv',
-        'replaced_update_end_recall_gist_1M.csv'
+        'replaced_update_end_recall_gist_1M.csv',
+        'faiss_end_recall_gist_1M.csv'
     ]
     # 手动编码的颜色和点的形状
-    colors = ['b', 'm', 'c']
-    markers = ['D', '^', '*']
+    colors = ['b', 'm', 'c', 'y']
+    markers = ['D', '^', '*', 'p']
     # 手动编码的图例标签
     labels = [
         'MN-RU γ',
         'MN-THN-RU',
-        'HNSW-RU'
+        'HNSW-RU',
+        'IVF-FLAT'
     ]
 
     csv_file_paths = [os.path.join(csv_dir, csv_file) for csv_file in csv_files]

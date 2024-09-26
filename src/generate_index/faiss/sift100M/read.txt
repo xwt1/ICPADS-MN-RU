@@ -1,0 +1,2 @@
+run ./src/python/split_sift_200M/generate_sift200M_index.py to get MN-RU and HNSW index
+run ./src/python/split_sift_200M/generate_sift200M_ivf_index.py to get faiss ivf-flat index

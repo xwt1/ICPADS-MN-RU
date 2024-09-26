@@ -73,7 +73,7 @@ import argparse
 def main(root_path):
     # CSV文件路径和保存图片的路径
     csv_file = root_path + '/output/figure_1/compare_queryTime_and_deleteUpdateTime.csv'
-    output_path = root_path + '/output/figure_1/figure.png'
+    output_path = root_path + '/output/figure_1/figure.pdf'
 
     # 读取CSV文件
     df = pd.read_csv(csv_file)
@@ -100,7 +100,7 @@ def main(root_path):
 
     # 绘制query_time和delete_update_time条形图在左轴
     ax1.bar(index, df['query_time'], bar_width, label='Query Time (s)', color=query_time_color, align='center')
-    ax1.bar(index + bar_width, df['delete_update_time'], bar_width, label='Delete/Update Time (s)', color=delete_update_time_color, align='center')
+    ax1.bar(index + bar_width, df['delete_update_time'], bar_width, label='Replaced_Update Time (s)', color=delete_update_time_color, align='center')
 
     # 设置左轴标签和标题
     ax1.set_xlabel('Dataset Name')

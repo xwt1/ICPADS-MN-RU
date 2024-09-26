@@ -13,7 +13,9 @@ fi
 
 cd build
 
-cmake -DCMAKE_BUILD_TYPE=Release ..
+# set path to your own libfaiss.a installation folder
+
+cmake -DFAISS_LIB=/usr/local/lib/libfaiss.a -DCMAKE_BUILD_TYPE=Release ..
 
 
 make -j$(nproc)

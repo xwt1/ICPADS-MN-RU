@@ -5,7 +5,7 @@ import argparse
 def main(root_path):
     # CSV文件路径和保存图片的路径
     csv_file = root_path + '/output/figure_2/unreachable_points_phenomenon_extream.csv'
-    output_path = root_path + '/output/figure_2/figure_extream.png'
+    output_path = root_path + '/output/figure_2/figure_extream.pdf'
 
     # 读取CSV文件
     df = pd.read_csv(csv_file)
