@@ -35,3 +35,4 @@ external/DiskANN
 *.tar.gz
 *.tar
 *.o
+external/diskann/
