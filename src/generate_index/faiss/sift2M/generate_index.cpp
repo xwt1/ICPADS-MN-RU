@@ -10,8 +10,8 @@
 
 int main() {
     // 参数设置
-    std::string data_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift/sift_base.fvecs";
-    std::string save_dir = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift_2M/faiss";
+    std::string data_path = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift_2M/sift_2M_first_half.fvecs";
+    std::string save_dir = "/home/xiaowentao/WorkSpace/training-plan/dockerimages/delete_update/retrieval-diversity-enhancement/data/sift_2M/faiss_index/";
     std::string save_path = save_dir + "sift2M_index.bin";
 
     int dimension = 0;

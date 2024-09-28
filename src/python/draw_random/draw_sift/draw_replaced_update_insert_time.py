@@ -107,8 +107,9 @@ if __name__ == "__main__":
         'edge_connected_8.csv',
         'edge_connected_9.csv',
         'edge_connected_10.csv',
+        'replaced_update.csv',
         'faiss_replaced_update.csv',
-        'replaced_update.csv'
+
     ]
     # 手动编码的颜色和点的形状
     colors = ['r', 'g', 'b', 'm', 'c', 'y']  # 添加了一个额外的颜色'y'（黄色）
@@ -119,8 +120,8 @@ if __name__ == "__main__":
         'MN-RU β',
         'MN-RU γ',
         'MN-THN-RU',
-        'IVF-FLAT'
         'HNSW-RU',
+        'IVF-FLAT',
     ]
 
     csv_file_paths = [os.path.join(csv_dir, csv_file) for csv_file in csv_files]

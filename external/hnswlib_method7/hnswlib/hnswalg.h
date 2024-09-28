@@ -1490,6 +1490,59 @@ namespace hnswlib {
             }
         }
 
+        void computeReciprocalNeighborRatio_out() {
+            double total_ratio = 0.0;
+            int valid_nodes = 0;
+
+            // 遍历每个节点
+            for (tableint i = 0; i < cur_element_count; ++i) {
+                int reciprocal_count = 0;  // 互为邻居的数量
+                int out_degree = 0;        // 当前节点的出度
+
+                // 遍历当前节点i的每一层
+                for (int level = 0; level <= element_levels_[i]; ++level) {
+                    linklistsizeint* ll_cur = get_linklist_at_level(i, level);
+                    int num_neighbors = getListCount(ll_cur);
+                    tableint* neighbors = (tableint*)(ll_cur + 1);
+
+                    out_degree += num_neighbors;
+
+                    // 遍历节点i的每一个邻居
+                    for (int j = 0; j < num_neighbors; ++j) {
+                        tableint neighbor_id = neighbors[j];
+
+                        // 检查neighbor_id的邻居列表中是否包含节点i
+                        linklistsizeint* ll_neighbor = get_linklist_at_level(neighbor_id, level);
+                        int num_neighbors_neighbor = getListCount(ll_neighbor);
+                        tableint* neighbors_neighbor = (tableint*)(ll_neighbor + 1);
+
+                        for (int k = 0; k < num_neighbors_neighbor; ++k) {
+                            if (neighbors_neighbor[k] == i) {
+                                reciprocal_count++;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // 如果当前节点有出度，计算互为邻居的比例
+                if (out_degree > 0) {
+                    double ratio = static_cast<double>(reciprocal_count) / out_degree;
+                    total_ratio += ratio;
+                    valid_nodes++;
+                }
+            }
+
+            // 计算所有节点的平均互为邻居比例
+            if (valid_nodes > 0) {
+                double average_ratio = total_ratio / valid_nodes;
+                std::cout << "Average Reciprocal Neighbor Ratio: " << average_ratio << std::endl;
+            } else {
+                std::cout << "No valid nodes with neighbors to calculate average ratio." << std::endl;
+            }
+        }
+
+
         void computeReciprocalNeighborRatio() {
             std::vector<int> inbound_connections(cur_element_count, 0);   // 统计每个节点的入度（被当作邻居的次数）
             std::vector<int> reciprocal_neighbors(cur_element_count, 0);  // 统计每个节点的互为邻居的次数

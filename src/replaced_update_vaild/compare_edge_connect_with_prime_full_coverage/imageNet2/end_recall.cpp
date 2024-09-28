@@ -33,26 +33,26 @@ int main(int argc, char* argv[]){
 
     std::vector <std::vector <std::string>> csv_index_path_vec={
 
-        {root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update7_end_recall.csv",
-         root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update7_imageNet_full_coverage_index.bin",
-                root_path + "/data/imageNet/image.ds",
-                root_path + "/data/imageNet/image.q",
-                root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
-        {root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update8_end_recall.csv",
-         root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update8_imageNet_full_coverage_index.bin",
-                root_path + "/data/imageNet/image.ds",
-                root_path + "/data/imageNet/image.q",
-                root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
-        {root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update9_end_recall.csv",
-         root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update9_imageNet_full_coverage_index.bin",
-                root_path + "/data/imageNet/image.ds",
-                root_path + "/data/imageNet/image.q",
-                root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
-        {root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update10_end_recall.csv",
-         root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update10_imageNet_full_coverage_index.bin",
-                root_path + "/data/imageNet/image.ds",
-                root_path + "/data/imageNet/image.q",
-                root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
+//        {root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update7_end_recall.csv",
+//         root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update7_imageNet_full_coverage_index.bin",
+//                root_path + "/data/imageNet/image.ds",
+//                root_path + "/data/imageNet/image.q",
+//                root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
+//        {root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update8_end_recall.csv",
+//         root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update8_imageNet_full_coverage_index.bin",
+//                root_path + "/data/imageNet/image.ds",
+//                root_path + "/data/imageNet/image.q",
+//                root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
+//        {root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update9_end_recall.csv",
+//         root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update9_imageNet_full_coverage_index.bin",
+//                root_path + "/data/imageNet/image.ds",
+//                root_path + "/data/imageNet/image.q",
+//                root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
+//        {root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update10_end_recall.csv",
+//         root_path + "/output/full_coverage/imageNet2/edge_connected_replaced_update10_imageNet_full_coverage_index.bin",
+//                root_path + "/data/imageNet/image.ds",
+//                root_path + "/data/imageNet/image.q",
+//                root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
         {root_path + "/output/full_coverage/imageNet2/replaced_update_end_recall.csv",
          root_path + "/output/full_coverage/imageNet2/replaced_update_imageNet_full_coverage_index.bin",
                 root_path + "/data/imageNet/image.ds",
@@ -92,10 +92,14 @@ int main(int argc, char* argv[]){
 
 
         int start_ef = 100;
-        int end_ef = 1000;
+        int end_ef = 10000;
         int step = 100;
         int num_threads = 40;
 
+        if(index_path == root_path + "/output/full_coverage/imageNet2/replaced_update_imageNet_full_coverage_index.bin"){
+            start_ef = 100;
+            end_ef = 14500;
+        }
 
         std::vector<std::vector<double>> recall_time_vector = util::countRecallWithDiffPara(index,queries,ground_truth,index_map,k,start_ef,end_ef,step,num_threads,data_siz);
 

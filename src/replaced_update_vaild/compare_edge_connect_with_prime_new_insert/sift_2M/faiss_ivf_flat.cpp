@@ -7,6 +7,7 @@
 #include <faiss/IndexIVFFlat.h>
 #include <faiss/index_io.h>
 #include "util.h"
+#include <omp.h>  // Include OpenMP header
 
 int main(int argc, char* argv[]){
     if (argc < 2) {
@@ -20,7 +21,7 @@ int main(int argc, char* argv[]){
 
     std::string query_path = root_path + "/data/sift_2M/bigann_query.fvecs";
 
-    std::string index_path = root_path + "/data/sift/faiss_index/sift_index.bin";
+    std::string index_path = root_path + "/data/sift_2M/faiss_index/sift2M_index.bin";
 
     std::string ground_truth_base_path = root_path + "/data/sift_2M/groundTruth/sift_2M_";
 
@@ -43,10 +44,12 @@ int main(int argc, char* argv[]){
     }
 
     std::cout << "Faiss IVF-FLAT 索引加载完毕 " << std::endl;
-    int nprobe = 10;  // Set the search parameter nprobe
+    int nprobe = 200;  // Set the search parameter nprobe
     index->nprobe = nprobe;
 
     int num_threads = 40;
+    omp_set_num_threads(num_threads);
+
     int num_iterations = 10; // Iteration count
     int num_to_delete_or_insert = 100000; // Number of vectors to delete/insert per iteration
 
@@ -54,47 +57,43 @@ int main(int argc, char* argv[]){
                                                      "avg_add_time", "avg_sum_delete_add_time", "avg_query_time"}};
     util::writeCSVOut(output_csv_path, header);
 
-    // Keep track of deleted IDs
-    std::unordered_set<faiss::idx_t> deleted_ids;
-
     for (int iteration = 0; iteration < num_iterations; ++iteration) {
-        std::unordered_set<size_t> delete_indices_set;
-        std::unordered_set<size_t> insert_indices_set;
+        // Define the deletion and insertion range for this iteration
+        faiss::idx_t start_id = iteration * num_to_delete_or_insert;
+        faiss::idx_t end_id = start_id + num_to_delete_or_insert;
 
-        size_t start_idx = iteration * num_to_delete_or_insert;
-        size_t end_idx = start_idx + num_to_delete_or_insert;
-        for (size_t idx = start_idx; idx < end_idx; ++idx) {
-            delete_indices_set.insert(idx);
+        // Prepare the vector of IDs to be deleted
+        std::vector<faiss::idx_t> ids_to_delete;
+        for (faiss::idx_t idx = start_id; idx < end_id; ++idx) {
+            ids_to_delete.push_back(idx);
         }
 
-        size_t insert_start_idx = iteration * num_to_delete_or_insert;
-        size_t insert_end_idx = insert_start_idx + num_to_delete_or_insert;
-        for (size_t idx = insert_start_idx; idx < insert_end_idx; ++idx) {
-            insert_indices_set.insert(first_half_data.size() + idx);
-        }
-
-        std::vector<size_t> delete_indices(delete_indices_set.begin(), delete_indices_set.end());
-        std::vector<size_t> insert_indices(insert_indices_set.begin(), insert_indices_set.end());
-
-        // Mark IDs as deleted
+        // Remove the IDs using remove_ids
+        faiss::IDSelectorArray id_selector(ids_to_delete.size(), ids_to_delete.data());
         auto start_time_delete = std::chrono::high_resolution_clock::now();
-        for (size_t idx : delete_indices) {
-            deleted_ids.insert(static_cast<faiss::idx_t>(idx));
-        }
+        index->remove_ids(id_selector);
         auto end_time_delete = std::chrono::high_resolution_clock::now();
         auto delete_duration = std::chrono::duration<double>(end_time_delete - start_time_delete).count();
 
-        // Prepare vectors to be inserted in a flat array for batch insertion
-        std::vector<float> insert_data(dim * insert_indices.size());
-        for (size_t i = 0; i < insert_indices.size(); ++i) {
-            size_t idx = insert_indices[i] - num_data_first_half;
+        std::cout<<index->ntotal<<std::endl;
+
+        // Prepare vectors to be inserted in a flat array for batch insertion with IDs
+        std::vector<float> insert_data(dim * num_to_delete_or_insert);
+        std::vector<faiss::idx_t> insert_ids(num_to_delete_or_insert);
+
+        for (faiss::idx_t i = 0; i < num_to_delete_or_insert; ++i) {
+            size_t idx = i + start_id;
+            insert_ids[i] = idx + num_data_first_half;  // ID shift
             std::copy(second_half_data[idx].begin(), second_half_data[idx].end(), insert_data.begin() + i * dim);
         }
 
+        // Use add_with_ids to add vectors back with their specific IDs
         auto start_time_add = std::chrono::high_resolution_clock::now();
-        index->add(insert_indices.size(), insert_data.data());
+        index->add_with_ids(num_to_delete_or_insert, insert_data.data(), insert_ids.data());
         auto end_time_add = std::chrono::high_resolution_clock::now();
         auto add_duration = std::chrono::duration<double>(end_time_add - start_time_add).count();
+
+        std::cout<<index->ntotal<<std::endl;
 
         // Perform k-NN search using Faiss
         std::vector<faiss::idx_t> I(num_queries * k);
@@ -152,19 +151,13 @@ int main(int argc, char* argv[]){
         std::cout << "Avg Query Time: " << avg_query_time << " seconds\n";
         std::cout << "Avg SUM Delete Add Time: " << avg_sum_delete_add_time << " seconds\n";
 
-        std::string iteration_string = std::to_string(iteration + 1);
-        std::string unreachable_points_string = "0";
-        std::string recall_string = std::to_string(recall);
-        std::string avg_delete_time_string = std::to_string(avg_delete_time);
-        std::string avg_add_time_string = std::to_string(avg_add_time);
-        std::string avg_sum_delete_add_time_string = std::to_string(avg_sum_delete_add_time);
-        std::string avg_query_time_string = std::to_string(avg_query_time);
-
-        std::vector<std::vector<std::string>> result_data = {{iteration_string, unreachable_points_string, recall_string,
-                                                              avg_delete_time_string, avg_add_time_string, avg_sum_delete_add_time_string, avg_query_time_string}};
+        std::vector<std::vector<std::string>> result_data = {{std::to_string(iteration + 1), "0", std::to_string(recall),
+                                                              std::to_string(avg_delete_time), std::to_string(avg_add_time),
+                                                              std::to_string(avg_sum_delete_add_time), std::to_string(avg_query_time)}};
 
         util::writeCSVApp(output_csv_path, result_data);
     }
+
     faiss::write_index(index, output_index_path.c_str());
     delete index;  // Free the index
     return 0;

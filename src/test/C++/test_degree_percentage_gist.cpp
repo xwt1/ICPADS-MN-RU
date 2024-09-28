@@ -39,6 +39,6 @@ int main(int argc, char* argv[]) {
     hnswlib::L2Space space(dim);
     hnswlib::HierarchicalNSW<float> index(&space, index_path, false, data_siz, true);
 
-    index.computeReciprocalNeighborRatio();
+    index.computeReciprocalNeighborRatio_out();
     return 0;
 }

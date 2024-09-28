@@ -30,8 +30,8 @@ int main(int argc, char* argv[]){
     std::string root_path = argv[1];
 
     std::vector <std::vector <std::string>> csv_index_path_vec = {
-            {root_path + "/output/random/imageNet/faiss_end_recall_imageNet_2M.csv",
-             root_path + "/output/random/imageNet/faiss_imageNet_output_index.bin",
+            {root_path + "/output/full_coverage/imageNet2/faiss_end_recall_imageNet_2M.csv",
+             root_path + "/output/full_coverage/imageNet2/faiss_imageNet_output_index.bin",
              root_path + "/data/imageNet/image.ds",
              root_path + "/data/imageNet/image.q",
              root_path + "/data/imageNet/imageNet_groundtruth.ivecs"},
@@ -75,8 +75,8 @@ int main(int argc, char* argv[]){
         std::cout << "Faiss index loaded successfully." << std::endl;
 
         // Set parameters for searching
-        int start_ef = 50;
-        int end_ef = 150;
+        int start_ef = 10;
+        int end_ef = 110;
         int step = 5;
         int num_threads = 40;
 

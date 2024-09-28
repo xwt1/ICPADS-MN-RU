@@ -56,7 +56,6 @@ if __name__ == "__main__":
         'edge_connected_9_end_recall_imageNet_2M.csv',
         'edge_connected_10_end_recall_imageNet_2M.csv',
         'replaced_update_end_recall_imageNet_2M.csv',
-        'faiss_end_recall_imageNet_1M.csv'
     ]
     # 手动编码的颜色和点的形状
     colors = ['b', 'm', 'c', 'y']
@@ -66,7 +65,6 @@ if __name__ == "__main__":
         'MN-RU γ',
         'MN-THN-RU',
         'HNSW-RU',
-        'IVF-FLAT'
     ]
 
     csv_file_paths = [os.path.join(csv_dir, csv_file) for csv_file in csv_files]

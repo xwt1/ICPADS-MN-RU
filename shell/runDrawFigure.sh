@@ -36,6 +36,7 @@ programs=(
 
   "/draw_new_insert/draw_sift2M/draw_replaced_update_insert_time.py"
   "/draw_new_insert/draw_sift2M/draw_unreachable_point.py"
+  "/draw_new_insert/draw_sift_2M_end_recall_100.py"
 
   "/draw_full_coverage/draw_gist_end_recall.py"
   "/draw_full_coverage/draw_imageNet_2M_end_recall.py"
@@ -76,6 +77,7 @@ log_files=(
 
       "new_insert_draw_replaced_update_insert_time.log"
       "new_insert_draw_unreachable_point.log"
+      "draw_sift_2M_end_recall_100.log"
 
       "full_coverage_draw_gist_end_recall.log"
       "full_coverage_draw_imageNet_2M_end_recall.log"

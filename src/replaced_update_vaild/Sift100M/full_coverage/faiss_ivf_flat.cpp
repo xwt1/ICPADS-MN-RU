@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-
+    num_data = 100000000;
     int k = 100;
     int num_threads = 40;  // Set your desired number of threads
 

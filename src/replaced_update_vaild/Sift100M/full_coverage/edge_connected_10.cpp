@@ -12,8 +12,8 @@
 #include "hnswlib/hnswlib.h"
 #include "util.h"  // 需要确保 util.h 中包含必要的函数声明
 
-// 添加 get_fvecs_file_info 函数
-void get_fvecs_file_info(const std::string& filename, int& dim, size_t& num_vectors) {
+// 添加 get_bvecs_file_info 函数
+void get_bvecs_file_info(const std::string& filename, int& dim, size_t& num_vectors) {
     std::ifstream input(filename, std::ios::binary);
     if (!input) {
         std::cerr << "无法打开文件: " << filename << std::endl;
@@ -34,14 +34,14 @@ void get_fvecs_file_info(const std::string& filename, int& dim, size_t& num_vect
     std::streampos file_size = input.tellg();
 
     // 计算向量数量
-    size_t vector_size_in_bytes = sizeof(int) + sizeof(float) * dim;
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(uint8_t) * dim;
     num_vectors = file_size / vector_size_in_bytes;
 
     input.close();
 }
 
-// 添加 load_fvecs_range 函数
-std::vector<std::vector<float>> load_fvecs_range(const std::string& filename, size_t start_idx, size_t count, int dim) {
+// 添加 load_bvecs_range 函数
+std::vector<std::vector<float>> load_bvecs_range(const std::string& filename, size_t start_idx, size_t count, int dim) {
     std::vector<std::vector<float>> data;
     std::ifstream input(filename, std::ios::binary);
     if (!input) {
@@ -49,7 +49,7 @@ std::vector<std::vector<float>> load_fvecs_range(const std::string& filename, si
         exit(1);
     }
 
-    size_t vector_size_in_bytes = sizeof(int) + sizeof(float) * dim;
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(uint8_t) * dim;
     size_t start_pos = start_idx * vector_size_in_bytes;
 
     // 移动文件指针到起始位置
@@ -66,13 +66,18 @@ std::vector<std::vector<float>> load_fvecs_range(const std::string& filename, si
             std::cerr << "维度不匹配，预期: " << dim << ", 实际: " << cur_dim << std::endl;
             exit(1);
         }
-        std::vector<float> vec(dim);
-        input.read(reinterpret_cast<char*>(vec.data()), sizeof(float) * dim);
+        std::vector<uint8_t> vec_uint8(dim);
+        input.read(reinterpret_cast<char*>(vec_uint8.data()), sizeof(uint8_t) * dim);
         if (input.fail()) {
             std::cerr << "读取向量失败。" << std::endl;
             exit(1);
         }
-        data.push_back(std::move(vec));
+        // 将 uint8_t 数据转换为 float
+        std::vector<float> vec_float(dim);
+        for (int d = 0; d < dim; ++d) {
+            vec_float[d] = static_cast<float>(vec_uint8[d]);
+        }
+        data.push_back(std::move(vec_float));
     }
 
     input.close();
@@ -100,13 +105,15 @@ int main(int argc, char* argv[]) {
 
     // 加载查询数据
     int dim = 0, num_queries = 0;
-    std::vector<std::vector<float>> queries = util::load_fvecs(query_path, dim, num_queries);
+    std::vector<std::vector<float>> queries = load_bvecs_range(query_path, 0, num_queries, dim);
 
     // 获取数据集信息而不加载到内存中
     size_t num_data = 0;
-    get_fvecs_file_info(data_path, dim, num_data);
+    get_bvecs_file_info(data_path, dim, num_data);
 
     int k = 100;  // 最近邻数量
+
+    num_data = 100000000;  // 如果您的数据集大小就是 1 亿
 
     // 初始化 HNSW 索引
     hnswlib::L2Space space(dim);
@@ -145,7 +152,7 @@ int main(int argc, char* argv[]) {
         }
 
         // 加载要删除的向量
-        std::vector<std::vector<float>> deleted_vectors = load_fvecs_range(data_path, start_idx, num_to_delete, dim);
+        std::vector<std::vector<float>> deleted_vectors = load_bvecs_range(data_path, start_idx, num_to_delete, dim);
 
         // 从索引中删除点
         auto start_time_delete = std::chrono::high_resolution_clock::now();
@@ -184,11 +191,16 @@ int main(int argc, char* argv[]) {
         double avg_query_time = query_duration / queries.size();
         double avg_sum_delete_add_time = avg_delete_time + avg_add_time;
 
-        // 输出迭代结果
+        // 新增统计不可达点的部分
+        std::vector<std::vector<float>> queries_tmp(queries.begin(), queries.begin() + 1); // 取第一个查询点
+        auto results = util::query_index(&index, queries_tmp, data_siz);
+        size_t unreachable_points_count = data_siz - results.front().first.size();  // 计算不可达点数
+
         std::cout << "------------------------------------------------------------------" << std::endl;
         std::cout << "第 " << iteration + 1 << " 次迭代:\n";
         std::cout << "删除了大约 " << ((double)num_to_delete / num_data) << " 的点" << std::endl;
         std::cout << "召回率: " << recall << "\n";
+        std::cout << "不可达点数: " << unreachable_points_count << "\n";
         std::cout << "平均删除时间: " << avg_delete_time << " 秒\n";
         std::cout << "平均添加时间: " << avg_add_time << " 秒\n";
         std::cout << "平均查询时间: " << avg_query_time << " 秒\n";
@@ -198,7 +210,7 @@ int main(int argc, char* argv[]) {
         // 将结果写入 CSV
         std::vector<std::vector<std::string>> result_data = {{
                                                                      std::to_string(iteration + 1),
-                                                                     "N/A",  // 如果可以计算不可达点的数量，调整此值
+                                                                     std::to_string(unreachable_points_count),  // 记录不可达点数
                                                                      std::to_string(recall),
                                                                      std::to_string(avg_delete_time),
                                                                      std::to_string(avg_add_time),

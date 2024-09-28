@@ -1,6 +1,3 @@
-//
-// Created by root on 5/30/24.
-//
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -8,15 +5,86 @@
 #include <thread>
 #include <atomic>
 #include <mutex>
-#include "hnswlib/hnswlib.h"
-#include <numeric>
+#include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
-#include <unordered_map>
 #include <chrono>
-#include "util.h"
+#include "hnswlib/hnswlib.h"
+#include "util.h"  // 需要确保 util.h 中包含必要的函数声明
 
-int main(int argc, char* argv[]){
+// 添加 get_bvecs_file_info 函数
+void get_bvecs_file_info(const std::string& filename, int& dim, size_t& num_vectors) {
+    std::ifstream input(filename, std::ios::binary);
+    if (!input) {
+        std::cerr << "无法打开文件: " << filename << std::endl;
+        exit(1);
+    }
+
+    // 读取第一个向量的维度
+    int temp_dim;
+    input.read(reinterpret_cast<char*>(&temp_dim), sizeof(int));
+    if (input.fail()) {
+        std::cerr << "读取维度失败。" << std::endl;
+        exit(1);
+    }
+    dim = temp_dim;
+
+    // 获取文件大小
+    input.seekg(0, std::ios::end);
+    std::streampos file_size = input.tellg();
+
+    // 计算向量数量
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(uint8_t) * dim;
+    num_vectors = file_size / vector_size_in_bytes;
+
+    input.close();
+}
+
+// 添加 load_bvecs_range 函数
+std::vector<std::vector<float>> load_bvecs_range(const std::string& filename, size_t start_idx, size_t count, int dim) {
+    std::vector<std::vector<float>> data;
+    std::ifstream input(filename, std::ios::binary);
+    if (!input) {
+        std::cerr << "无法打开文件: " << filename << std::endl;
+        exit(1);
+    }
+
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(uint8_t) * dim;
+    size_t start_pos = start_idx * vector_size_in_bytes;
+
+    // 移动文件指针到起始位置
+    input.seekg(start_pos, std::ios::beg);
+    if (input.fail()) {
+        std::cerr << "无法定位到文件中的起始位置。" << std::endl;
+        exit(1);
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        int cur_dim = 0;
+        input.read(reinterpret_cast<char*>(&cur_dim), sizeof(int));
+        if (cur_dim != dim) {
+            std::cerr << "维度不匹配，预期: " << dim << ", 实际: " << cur_dim << std::endl;
+            exit(1);
+        }
+        std::vector<uint8_t> vec_uint8(dim);
+        input.read(reinterpret_cast<char*>(vec_uint8.data()), sizeof(uint8_t) * dim);
+        if (input.fail()) {
+            std::cerr << "读取向量失败。" << std::endl;
+            exit(1);
+        }
+        // 将 uint8_t 数据转换为 float
+        std::vector<float> vec_float(dim);
+        for (int d = 0; d < dim; ++d) {
+            vec_float[d] = static_cast<float>(vec_uint8[d]);
+        }
+        data.push_back(std::move(vec_float));
+    }
+
+    input.close();
+    return data;
+}
+
+int main(int argc, char* argv[]) {
     if (argc < 3) {
         std::cerr << "用法: " << argv[0] << " <root_path> <output_path>" << std::endl;
         return 1;
@@ -29,96 +97,85 @@ int main(int argc, char* argv[]){
     std::string index_path = root_path + "/sift/sift200M/index/sift_100M_index.bin";
     std::string ground_truth_path = root_path + "/sift/sift200M/gnd/idx_100M.ivecs";
     std::string output_csv_path = output_path + "/output/full_coverage/sift200M/replaced_update.csv";
-    std::string output_index_path = output_path + "/output/full_coverage/sift200M/replaced_update_sift100M_full_coverage_index.bin";
+    std::string output_index_path = output_path + "/output/full_coverage/sift200M/replaced_update_imageNet_full_coverage_index.bin";
 
-    std::vector<std::string> paths_to_create ={output_csv_path,output_index_path};
+    // 确保输出目录存在
+    std::vector<std::string> paths_to_create = {output_csv_path, output_index_path};
     util::create_directories(paths_to_create);
 
-    int dim, num_data, num_queries;
-    std::vector<std::vector<float>> data = util::load_fvecs(data_path, dim, num_data);
-    std::vector<std::vector<float>> queries = util::load_fvecs(query_path, dim, num_queries);
+    // 加载查询数据
+    int dim = 0, num_queries = 0;
+    std::vector<std::vector<float>> queries = load_bvecs_range(query_path, 0, num_queries, dim);
 
-    size_t data_siz = data.size();
+    // 获取数据集信息而不加载到内存中
+    size_t num_data = 0;
+    get_bvecs_file_info(data_path, dim, num_data);
 
-    int k = 100;
+    int k = 100;  // 最近邻数量
 
-    // Initialize the HNSW index
+    num_data = 100000000;  // 如果您的数据集大小就是 1 亿
+
+    // 初始化 HNSW 索引
     hnswlib::L2Space space(dim);
-    hnswlib::HierarchicalNSW<float> index(&space, index_path, false, data_siz, true);
-    std::unordered_map<size_t, size_t> index_map;
-    for (size_t i = 0; i < num_data; ++i) {
-        index_map[i] = i;
-    }
+    hnswlib::HierarchicalNSW<float> index(&space, index_path, false, num_data, true);
 
-    std::cout << "索引加载完毕 " << std::endl;
-    // 设置查询参数`ef`
+    std::cout << "索引加载完毕。" << std::endl;
+
+    // 设置查询参数 'ef'
     int ef = 500;
     index.setEf(ef);
 
     int num_threads = 40;
-
-    // Number of iterations for delete and re-add process
     int num_iterations = 100;
-    std::random_device rd;
-    std::mt19937 gen(rd());
+    size_t num_to_delete = num_data / num_iterations;
 
-    // Perform initial brute-force k-NN search to get ground truth
+    // 加载真值（ground truth）
     std::vector<std::vector<size_t>> ground_truth = util::load_ivecs_indices(ground_truth_path);
 
-
-    // generate CSV file
-    std::vector<std::vector <std::string>> header = {{"iteration_number" , "unreachable_points_number","recall","avg_delete_time",
-                                                      "avg_add_time","avg_sum_delete_add_time","avg_query_time"}};
+    // 准备 CSV 输出
+    std::vector<std::vector<std::string>> header = {{"iteration_number", "unreachable_points_number", "recall", "avg_delete_time",
+                                                     "avg_add_time", "avg_sum_delete_add_time", "avg_query_time"}};
     util::writeCSVOut(output_csv_path, header);
 
+    // 用于跟踪重新添加点的标签映射
+    std::unordered_map<size_t, size_t> index_map;
 
-    size_t last_idx = 0;
+    size_t data_siz = num_data;  // 原始数据集大小
+
     for (int iteration = 0; iteration < num_iterations; ++iteration) {
-        std::unordered_set<size_t> delete_indices_set;
+        size_t start_idx = iteration * num_to_delete;
 
-        // 计算后一半结点的起始下标
-        size_t start_idx = last_idx;
-        int num_to_delete = num_data / num_iterations;
-        double delete_rate = (double)num_to_delete / num_data;
-        last_idx =  start_idx+num_to_delete;
-
-
-        // 将后一半结点的下标插入到集合中
-        for (size_t idx = start_idx; idx < start_idx+num_to_delete; ++idx) {
-            delete_indices_set.insert(idx);
+        // 生成要删除的索引
+        std::vector<size_t> delete_indices(num_to_delete);
+        for (size_t i = 0; i < num_to_delete; ++i) {
+            delete_indices[i] = start_idx + i;
         }
 
-        std::vector<size_t> delete_indices(delete_indices_set.begin(), delete_indices_set.end());
+        // 加载要删除的向量
+        std::vector<std::vector<float>> deleted_vectors = load_bvecs_range(data_path, start_idx, num_to_delete, dim);
 
-
-        // Save the vectors and their labels to be deleted before deleting them
-        std::vector<std::vector<float>> deleted_vectors(delete_indices.size(), std::vector<float>(dim));
-        for (size_t i = 0; i < delete_indices.size(); ++i) {
-            size_t idx = delete_indices[i];
-            deleted_vectors[i] = data[idx];
-        }
-
+        // 从索引中删除点
         auto start_time_delete = std::chrono::high_resolution_clock::now();
         util::markDeleteMultiThread(index, delete_indices, index_map, num_threads);
         auto end_time_delete = std::chrono::high_resolution_clock::now();
         auto delete_duration = std::chrono::duration<double>(end_time_delete - start_time_delete).count();
 
-
-        // Re-add the deleted vectors with their original labels
-        std::vector<size_t> new_indices(delete_indices.size());
-        for (size_t i = 0; i < delete_indices.size(); ++i) {
-            size_t idx = index_map[delete_indices[i]];
-            size_t new_idx = (idx < num_data) ? idx + num_data : idx - num_data;
+        // 使用新标签重新添加被删除的向量
+        std::vector<size_t> new_indices(num_to_delete);
+        for (size_t i = 0; i < num_to_delete; ++i) {
+            size_t old_idx = delete_indices[i];
+            size_t new_idx = (old_idx < num_data) ? old_idx + num_data : old_idx - num_data;
             new_indices[i] = new_idx;
-            index_map[delete_indices[i]] = new_idx;
+            index_map[old_idx] = new_idx;  // 更新标签映射
         }
 
+        // 将点重新添加到索引中
         auto start_time_add = std::chrono::high_resolution_clock::now();
         util::addPointsMultiThread(index, deleted_vectors, new_indices, num_threads);
         auto end_time_add = std::chrono::high_resolution_clock::now();
         auto add_duration = std::chrono::duration<double>(end_time_add - start_time_add).count();
 
-        // Perform k-NN search and measure recall and query time
+        // 执行 k-NN 搜索并测量召回率和查询时间
         std::vector<std::vector<size_t>> labels;
 
         auto start_time_query = std::chrono::high_resolution_clock::now();
@@ -126,45 +183,44 @@ int main(int argc, char* argv[]){
         auto end_time_query = std::chrono::high_resolution_clock::now();
         auto query_duration = std::chrono::duration<double>(end_time_query - start_time_query).count();
 
+        // 计算召回率
         float recall = util::recall_score(ground_truth, labels, index_map, data_siz);
 
-        auto avg_delete_time = delete_duration / num_to_delete;
-        auto avg_add_time = add_duration / num_to_delete;
-        auto avg_query_time = query_duration / queries.size();
+        double avg_delete_time = delete_duration / num_to_delete;
+        double avg_add_time = add_duration / num_to_delete;
+        double avg_query_time = query_duration / queries.size();
+        double avg_sum_delete_add_time = avg_delete_time + avg_add_time;
 
-        auto avg_sum_delete_add_time = avg_delete_time + avg_add_time;
+        // 新增统计不可达点的部分
+        std::vector<std::vector<float>> queries_tmp(queries.begin(), queries.begin() + 1); // 取第一个查询点
+        auto results = util::query_index(&index, queries_tmp, data_siz);
+        size_t unreachable_points_count = data_siz - results.front().first.size();  // 计算不可达点数
 
         std::cout << "------------------------------------------------------------------" << std::endl;
-        std::cout << "Iteration " << iteration + 1 << ":\n";
-        std::cout<<"删除了大约"<<delete_rate<<"的点"<<std::endl;
-        std::cout << "RECALL: " << recall << "\n";
-        std::cout << "Avg Delete Time: " << avg_delete_time << " seconds\n";
-        std::cout << "Avg Add Time: " << avg_add_time << " seconds\n";
-        std::cout << "Avg Query Time: " << avg_query_time << " seconds\n";
-        std::cout << "Avg SUM Delete Add Time: " << avg_sum_delete_add_time << " seconds\n";
-
-        std::vector<std::vector<float>> queries_tmp(queries.begin(),queries.begin()+1);
-        auto results = util::query_index(&index, queries_tmp, data.size());
-        std::unordered_map <size_t,bool> excluded_global_labels_all;
-        for (size_t j = 0; j < queries_tmp.size(); ++j) {
-            std::cout << "Query " << j << ":" << std::endl;
-            std::cout << "Labels length: " << results[j].first.size() << ",只能找到这么多的点" << std::endl;
-        }
+        std::cout << "第 " << iteration + 1 << " 次迭代:\n";
+        std::cout << "删除了大约 " << ((double)num_to_delete / num_data) << " 的点" << std::endl;
+        std::cout << "召回率: " << recall << "\n";
+        std::cout << "不可达点数: " << unreachable_points_count << "\n";
+        std::cout << "平均删除时间: " << avg_delete_time << " 秒\n";
+        std::cout << "平均添加时间: " << avg_add_time << " 秒\n";
+        std::cout << "平均查询时间: " << avg_query_time << " 秒\n";
+        std::cout << "平均删除和添加总时间: " << avg_sum_delete_add_time << " 秒\n";
         std::cout << "------------------------------------------------------------------" << std::endl;
 
-        std::string iteration_string = std::to_string(iteration + 1);
-        std::string unreachable_points_string = std::to_string(data_siz - results.front().first.size());
-        std::string recall_string = std::to_string(recall);
-        std::string avg_delete_time_string = std::to_string(avg_delete_time);
-        std::string avg_add_time_string = std::to_string(avg_add_time);
-        std::string avg_sum_delete_add_time_string = std::to_string(avg_sum_delete_add_time);
-        std::string avg_query_time_string = std::to_string(avg_query_time);
-
-        std::vector<std::vector <std::string>> result_data = {{iteration_string, unreachable_points_string,recall_string,
-                                                               avg_delete_time_string,avg_add_time_string,avg_sum_delete_add_time_string,avg_query_time_string}};
-
+        // 将结果写入 CSV
+        std::vector<std::vector<std::string>> result_data = {{
+                                                                     std::to_string(iteration + 1),
+                                                                     std::to_string(unreachable_points_count),  // 记录不可达点数
+                                                                     std::to_string(recall),
+                                                                     std::to_string(avg_delete_time),
+                                                                     std::to_string(avg_add_time),
+                                                                     std::to_string(avg_sum_delete_add_time),
+                                                                     std::to_string(avg_query_time)
+                                                             }};
         util::writeCSVApp(output_csv_path, result_data);
     }
+
+    // 保存更新后的索引
     index.saveIndex(output_index_path);
-    return  0;
+    return 0;
 }
