@@ -96,22 +96,22 @@ int main(int argc, char* argv[]) {
     std::string query_path = root_path + "/sift/sift200M/bigann_query.bvecs";
     std::string index_path = root_path + "/sift/sift200M/index/sift_100M_index.bin";
     std::string ground_truth_path = root_path + "/sift/sift200M/gnd/idx_100M.ivecs";
-    std::string output_csv_path = output_path + "/output/full_coverage/sift200M/edge_connected_replaced_update10.csv";
-    std::string output_index_path = output_path + "/output/full_coverage/sift200M/edge_connected_replaced_update10_sift100M_full_coverage_index.bin";
+    std::string output_csv_path = root_path + "/output/full_coverage/sift200M/edge_connected_replaced_update10.csv";
+    std::string output_index_path = root_path + "/output/full_coverage/sift200M/edge_connected_replaced_update10_sift100M_full_coverage_index.bin";
 
     // 确保输出目录存在
     std::vector<std::string> paths_to_create = {output_csv_path, output_index_path};
     util::create_directories(paths_to_create);
 
     // 加载查询数据
-    int dim = 0, num_queries = 0;
+    int dim = 128, num_queries = 10000;
     std::vector<std::vector<float>> queries = load_bvecs_range(query_path, 0, num_queries, dim);
 
     // 获取数据集信息而不加载到内存中
     size_t num_data = 0;
     get_bvecs_file_info(data_path, dim, num_data);
 
-    int k = 100;  // 最近邻数量
+    int k = 1000;  // 最近邻数量
 
     num_data = 100000000;  // 如果您的数据集大小就是 1 亿
 
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
     std::cout << "索引加载完毕。" << std::endl;
 
     // 设置查询参数 'ef'
-    int ef = 500;
+    int ef = 50;
     index.setEf(ef);
 
     int num_threads = 40;
@@ -139,6 +139,9 @@ int main(int argc, char* argv[]) {
 
     // 用于跟踪重新添加点的标签映射
     std::unordered_map<size_t, size_t> index_map;
+    for (size_t i = 0; i < num_data; ++i) {
+        index_map[i] = i;
+    }
 
     size_t data_siz = num_data;  // 原始数据集大小
 
@@ -193,7 +196,7 @@ int main(int argc, char* argv[]) {
 
         // 新增统计不可达点的部分
         std::vector<std::vector<float>> queries_tmp(queries.begin(), queries.begin() + 1); // 取第一个查询点
-        auto results = util::query_index(&index, queries_tmp, data_siz);
+        auto results = util::query_index(&index, queries_tmp, num_data);
         size_t unreachable_points_count = data_siz - results.front().first.size();  // 计算不可达点数
 
         std::cout << "------------------------------------------------------------------" << std::endl;

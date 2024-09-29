@@ -96,22 +96,22 @@ int main(int argc, char* argv[]) {
     std::string query_path = root_path + "/sift/sift200M/bigann_query.bvecs";
     std::string index_path = root_path + "/sift/sift200M/index/sift_100M_index.bin";
     std::string ground_truth_path = root_path + "/sift/sift200M/gnd/idx_100M.ivecs";
-    std::string output_csv_path = output_path + "/output/full_coverage/sift200M/edge_connected_replaced_update7.csv";
-    std::string output_index_path = output_path + "/output/full_coverage/sift200M/edge_connected_replaced_update7_sift100M_full_coverage_index.bin";
+    std::string output_csv_path = root_path + "/output/full_coverage/sift200M/edge_connected_replaced_update7.csv";
+    std::string output_index_path = root_path + "/output/full_coverage/sift200M/edge_connected_replaced_update7_sift100M_full_coverage_index.bin";
 
     // 确保输出目录存在
     std::vector<std::string> paths_to_create = {output_csv_path, output_index_path};
     util::create_directories(paths_to_create);
 
     // 加载查询数据
-    int dim = 0, num_queries = 0;
+    int dim = 128, num_queries = 10000;
     std::vector<std::vector<float>> queries = load_bvecs_range(query_path, 0, num_queries, dim);
 
     // 获取数据集信息而不加载到内存中
     size_t num_data = 0;
     get_bvecs_file_info(data_path, dim, num_data);
 
-    int k = 100;  // 最近邻数量
+    int k = 1000;  // 最近邻数量
 
     num_data = 100000000;  // 如果您的数据集大小就是 1 亿
 
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
     std::cout << "索引加载完毕。" << std::endl;
 
     // 设置查询参数 'ef'
-    int ef = 500;
+    int ef = 50;
     index.setEf(ef);
 
     int num_threads = 40;

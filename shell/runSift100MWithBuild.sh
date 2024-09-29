@@ -18,7 +18,7 @@ echo $ROOT_DIR
 
 # Define programs and their corresponding log files using two parallel arrays
 programs=(
-  "edge_connected_replaced_update_7_full_coverage_sift100M"
+#  "edge_connected_replaced_update_7_full_coverage_sift100M"
   "edge_connected_replaced_update_8_full_coverage_sift100M"
   "edge_connected_replaced_update_9_full_coverage_sift100M"
   "edge_connected_replaced_update_10_full_coverage_sift100M"
@@ -27,7 +27,7 @@ programs=(
 )
 
 log_files=(
-  "edge_connected_replaced_update_7_full_coverage_sift100M.log"
+#  "edge_connected_replaced_update_7_full_coverage_sift100M.log"
   "edge_connected_replaced_update_8_full_coverage_sift100M.log"
   "edge_connected_replaced_update_9_full_coverage_sift100M.log"
   "edge_connected_replaced_update_10_full_coverage_sift100M.log"
