@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 
     try {
         // Generate random numbers
-        auto random_numbers = util::generate_unique_random_numbers(limit, size, num);
+        auto random_numbers = util::generate_unique_random_numbers_fisher_Yates(limit, size, num);
 
         // Save to fvecs format
         util::save_to_ivecs(output_random_indice, random_numbers);

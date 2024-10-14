@@ -347,18 +347,50 @@ std::vector<std::vector<size_t>> util::generate_unique_random_numbers(int limit,
         std::vector<size_t> available_numbers(limit);
         std::iota(available_numbers.begin(), available_numbers.end(), 0); // Fill with 0, 1, ..., limit -1
 
+        std::cout<<"第"<<n+1<<"轮开始"<<std::endl;
         std::vector<size_t> random_numbers(size);
         for (int i = 0; i < size; ++i) {
             std::uniform_int_distribution<> dis(0, available_numbers.size() - 1);
             int index = dis(gen);
             random_numbers[i] = available_numbers[index];
             available_numbers.erase(available_numbers.begin() + index);
+//            std::cout<<index<<std::endl;
         }
         results.push_back(random_numbers);
+        std::cout<<"第"<<n+1<<"轮结束"<<std::endl;
     }
 
     return results;
 }
+
+std::vector<std::vector<size_t>> util::generate_unique_random_numbers_fisher_Yates(int limit, int size, int num) {
+    if (size > limit) {
+        throw std::invalid_argument("size cannot be greater than limit + 1");
+    }
+
+    std::vector<std::vector<size_t>> results;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+
+    for (int n = 0; n < num; ++n) {
+        std::vector<size_t> available_numbers(limit);
+        std::iota(available_numbers.begin(), available_numbers.end(), 0); // Fill with 0, 1, ..., limit - 1
+
+        std::cout << "第" << n + 1 << "轮开始" << std::endl;
+        for (int i = 0; i < size; ++i) {
+            std::uniform_int_distribution<> dis(i, limit - 1);
+            int random_index = dis(gen);
+            std::swap(available_numbers[i], available_numbers[random_index]);
+        }
+
+        // Only take the first 'size' numbers
+        results.emplace_back(available_numbers.begin(), available_numbers.begin() + size);
+        std::cout << "第" << n + 1 << "轮结束" << std::endl;
+    }
+
+    return results;
+}
+
 
 void util::save_to_fvecs(const std::string& filename, const std::vector<std::vector<int>>& data) {
     std::ofstream outfile(filename, std::ios::binary);

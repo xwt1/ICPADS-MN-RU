@@ -21,6 +21,52 @@
 // 添加这行以启用多线程支持
 #include <omp.h> // OpenMP for controlling thread count
 
+// 添加 load_bvecs_range 函数
+std::vector<std::vector<float>> load_bvecs_range(const std::string& filename, size_t start_idx, size_t count, int dim) {
+    std::vector<std::vector<float>> data;
+    std::ifstream input(filename, std::ios::binary);
+    if (!input) {
+        std::cerr << "无法打开文件: " << filename << std::endl;
+        exit(1);
+    }
+
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(uint8_t) * dim;
+    size_t start_pos = start_idx * vector_size_in_bytes;
+
+    // 移动文件指针到起始位置
+    input.seekg(start_pos, std::ios::beg);
+    if (input.fail()) {
+        std::cerr << "无法定位到文件中的起始位置。" << std::endl;
+        exit(1);
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        int cur_dim = 0;
+        input.read(reinterpret_cast<char*>(&cur_dim), sizeof(int));
+        if (cur_dim != dim) {
+            std::cerr << "维度不匹配，预期: " << dim << ", 实际: " << cur_dim << std::endl;
+            exit(1);
+        }
+        std::vector<uint8_t> vec_uint8(dim);
+        input.read(reinterpret_cast<char*>(vec_uint8.data()), sizeof(uint8_t) * dim);
+        if (input.fail()) {
+            std::cerr << "读取向量失败。" << std::endl;
+            exit(1);
+        }
+        // 将 uint8_t 数据转换为 float
+        std::vector<float> vec_float(dim);
+        for (int d = 0; d < dim; ++d) {
+            vec_float[d] = static_cast<float>(vec_uint8[d]);
+        }
+        data.push_back(std::move(vec_float));
+    }
+
+    input.close();
+    return data;
+}
+
+
+
 int main(int argc, char* argv[]){
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <root_path>" << std::endl;
@@ -30,11 +76,11 @@ int main(int argc, char* argv[]){
     std::string root_path = argv[1];
 
     std::vector <std::vector <std::string>> csv_index_path_vec = {
-            {root_path + "/output/full_coverage/sift/faiss_end_recall_sift_1M.csv",
-             root_path + "/output/full_coverage/sift/faiss_sift_output_index.bin",
-             root_path + "/data/sift/sift_base.fvecs",
-             root_path + "/data/sift/sift_query.fvecs",
-             root_path + "/data/sift/sift_groundtruth.ivecs"},
+            {root_path + "/output/full_coverage/sift200M/faiss_end_recall_sift_100M.csv",
+             root_path + "/output/full_coverage/sift200M/faiss_sift_output_index.bin",
+             root_path + "/sift/bigann_base.bvecs",
+             root_path + "/sift/sift200M/bigann_query.bvecs",
+             root_path + "/sift/sift200M/gnd/idx_100M.ivecs",}
     };
 
     for(auto csv_index : csv_index_path_vec){
@@ -44,19 +90,19 @@ int main(int argc, char* argv[]){
         auto query_path = csv_index[3];
         auto ground_truth_path = csv_index[4];
 
-        int dim, num_data, num_queries;
-        std::vector<std::vector<float>> data = util::load_fvecs(data_path, dim, num_data);
-        std::vector<std::vector<float>> queries = util::load_fvecs(query_path, dim, num_queries);
-        size_t data_siz = data.size();
-        int k = 100;
+        int dim = 128, num_queries = 10000;
+//        std::vector<std::vector<float>> data = util::load_fvecs(data_path, dim, num_data);
+        std::vector<std::vector<float>> queries = load_bvecs_range(query_path, 0, num_queries, dim);
+//        size_t data_siz = 100000000;
+        int k = 1000;
 
         std::vector<std::vector<size_t>> ground_truth = util::load_ivecs_indices(ground_truth_path);
 
         // Flatten data vectors to match Faiss's requirements
-        std::vector<float> flat_data(data_siz * dim);
-        for (size_t i = 0; i < data_siz; ++i) {
-            std::copy(data[i].begin(), data[i].end(), flat_data.begin() + i * dim);
-        }
+//        std::vector<float> flat_data(data_siz * dim);
+//        for (size_t i = 0; i < data_siz; ++i) {
+//            std::copy(data[i].begin(), data[i].end(), flat_data.begin() + i * dim);
+//        }
 
         std::vector<float> flat_queries(num_queries * dim);
         for (size_t i = 0; i < num_queries; ++i) {
@@ -76,12 +122,15 @@ int main(int argc, char* argv[]){
 
         // Set parameters for searching
         int start_ef = 20;
-        int end_ef = 120;
+        int end_ef = 300;
         int step = 5;
         int num_threads = 40;
 
         omp_set_num_threads(num_threads);
         std::vector<std::vector<double>> recall_time_vector;
+
+        std::cout<<queries.size()<<std::endl;
+        std::cout<<flat_queries.size()<<std::endl;
 
         for (int ef = start_ef; ef <= end_ef; ef += step) {
             ivf_index->nprobe = ef; // Set the nprobe parameter

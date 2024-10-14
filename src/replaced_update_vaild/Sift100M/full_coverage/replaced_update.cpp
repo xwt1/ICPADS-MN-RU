@@ -97,7 +97,7 @@ int main(int argc, char* argv[]) {
     std::string index_path = root_path + "/sift/sift200M/index/sift_100M_index.bin";
     std::string ground_truth_path = root_path + "/sift/sift200M/gnd/idx_100M.ivecs";
     std::string output_csv_path = root_path + "/output/full_coverage/sift200M/replaced_update.csv";
-    std::string output_index_path = root_path + "/output/full_coverage/sift200M/replaced_update_imageNet_full_coverage_index.bin";
+    std::string output_index_path = root_path + "/output/full_coverage/sift200M/replaced_update_sift100M_full_coverage_index.bin";
 
     // 确保输出目录存在
     std::vector<std::string> paths_to_create = {output_csv_path, output_index_path};

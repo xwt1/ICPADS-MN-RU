@@ -51,6 +51,13 @@ programs=(
   "/draw_random/draw_imageNet_2M_end_recall_10.py"
   "/draw_random/draw_sift_end_recall_100.py"
 
+  "/draw_sift100M/draw_full_coverage/draw_replaced_update_insert_time.py"
+  "/draw_sift100M/draw_full_coverage/draw_unreachable_point.py"
+  "/draw_sift100M/draw_full_coverage/draw_sift_end_recall_100.py"
+
+  "/draw_sift100M/draw_random/draw_replaced_update_insert_time.py"
+  "/draw_sift100M/draw_random/draw_unreachable_point.py"
+  "/draw_sift100M/draw_random/draw_sift_end_recall_100.py"
 
   "/draw_figure1/draw_figure1.py"
 
@@ -90,6 +97,15 @@ log_files=(
       "draw_gist_end_recall_100"
       "draw_imageNet_2M_end_recall_10"
       "draw_sift_end_recall_100"
+
+      "draw_replaced_update_insert_time"
+      "draw_unreachable_point"
+      "draw_sift_end_recall_100"
+
+
+      "draw_replaced_update_insert_time.py"
+      "draw_unreachable_point.py"
+      "draw_sift_end_recall_100.py"
 
       "draw_figure1.log"
 

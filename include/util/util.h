@@ -49,6 +49,8 @@ public:
 
     static std::vector<std::vector<size_t>> generate_unique_random_numbers(int limit, int size, int num) ;
 
+    static std::vector<std::vector<size_t>> generate_unique_random_numbers_fisher_Yates(int limit, int size, int num) ;
+
     static void save_to_fvecs(const std::string& filename, const std::vector<std::vector<int>>& data);
 
     static void save_to_ivecs(const std::string& filename, const std::vector<std::vector<size_t>>& data);

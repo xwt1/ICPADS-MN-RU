@@ -47,16 +47,16 @@ data_path = '/root/WorkSpace/dataset/sift/bigann_base.bvecs'
 index_path = '/root/WorkSpace/dataset/sift/sift200M/index/faiss_ivf_index.bin'
 
 # 检查索引是否已存在
-if os.path.exists(index_path):
-    print("索引文件已存在，无需重新构建。")
-    exit()
+# if os.path.exists(index_path):
+#     print("索引文件已存在，无需重新构建。")
+#     exit()
 
 # 创建保存索引的目录（如果不存在）
 save_dir = os.path.dirname(index_path)
 os.makedirs(save_dir, exist_ok=True)
 
 # 初始化 Faiss 索引参数
-nlist = 10000  # 聚类中心的数量，可根据数据规模调整
+nlist = 1000000  # 聚类中心的数量，可根据数据规模调整
 quantizer = faiss.IndexFlatL2(dimension)
 index = faiss.IndexIVFFlat(quantizer, dimension, nlist, faiss.METRIC_L2)
 

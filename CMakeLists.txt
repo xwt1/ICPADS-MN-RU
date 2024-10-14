@@ -220,6 +220,7 @@ target_link_libraries(faiss_full_coverage_imageNet2 PRIVATE maintenance_hnswlib)
 
 
 
+
 # random
 # Edge-Connected replaced_update
 target_link_libraries(edge_connected_replaced_update_7_random_sift PRIVATE edge_connect_replaced_update7_hnswlib)
@@ -299,6 +300,17 @@ target_link_libraries(end_recall_full_coverage_word2vec PRIVATE hnswlib)
 target_link_libraries(end_recall_faiss_sift_2M_new_insert PRIVATE ${FAISS_LIB} OpenMP::OpenMP_CXX ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries(end_recall_faiss_sift_2M_new_insert PRIVATE maintenance_hnswlib)
 
+target_link_libraries(end_recall_sift100M_full_coverage PRIVATE ${FAISS_LIB} OpenMP::OpenMP_CXX ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(end_recall_sift100M_full_coverage PRIVATE maintenance_hnswlib)
+
+target_link_libraries(end_recall_faiss_sift100M_full_coverage PRIVATE ${FAISS_LIB} OpenMP::OpenMP_CXX ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(end_recall_faiss_sift100M_full_coverage PRIVATE maintenance_hnswlib)
+
+target_link_libraries(end_recall_sift100M_random PRIVATE maintenance_hnswlib)
+
+target_link_libraries(end_recall_faiss_sift100M_random PRIVATE ${FAISS_LIB} OpenMP::OpenMP_CXX ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(end_recall_faiss_sift100M_random PRIVATE maintenance_hnswlib)
+
 # Back Up Index build
 target_link_libraries(back_up_edge_connected_9 PRIVATE hnswlib)
 
@@ -311,3 +323,12 @@ target_link_libraries(edge_connected_replaced_update_10_full_coverage_sift100M P
 target_link_libraries(replaced_update_full_coverage_sift100M PRIVATE hnswlib)
 target_link_libraries(faiss_full_coverage_sift100M PRIVATE ${FAISS_LIB} OpenMP::OpenMP_CXX ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries(faiss_full_coverage_sift100M PRIVATE maintenance_hnswlib)
+
+
+target_link_libraries(edge_connected_replaced_update_7_random_sift100M PRIVATE edge_connect_replaced_update7_hnswlib)
+target_link_libraries(edge_connected_replaced_update_8_random_sift100M PRIVATE edge_connect_replaced_update8_hnswlib)
+target_link_libraries(edge_connected_replaced_update_9_random_sift100M PRIVATE edge_connect_replaced_update9_hnswlib)
+target_link_libraries(edge_connected_replaced_update_10_random_sift100M PRIVATE edge_connect_replaced_update10_hnswlib)
+target_link_libraries(replaced_update_random_sift100M PRIVATE hnswlib)
+target_link_libraries(faiss_random_sift100M PRIVATE ${FAISS_LIB} OpenMP::OpenMP_CXX ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+target_link_libraries(faiss_random_sift100M PRIVATE maintenance_hnswlib)

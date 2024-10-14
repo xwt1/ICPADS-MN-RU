@@ -376,6 +376,24 @@ add_executable(end_recall_faiss_sift_2M_new_insert replaced_update_vaild/compare
         util/util.cpp
         util/thread_pool.cpp)
 
+add_executable(end_recall_sift100M_full_coverage replaced_update_vaild/Sift100M/full_coverage/end_recall.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_faiss_sift100M_full_coverage replaced_update_vaild/Sift100M/full_coverage/end_recall_faiss_sift.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+add_executable(end_recall_sift100M_random replaced_update_vaild/Sift100M/random/end_recall.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(end_recall_faiss_sift100M_random replaced_update_vaild/Sift100M/random/end_recall_faiss_sift.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+
+
+#add_executable(end_recall_sift100M_full_coverage replaced_update_vaild/Sift100M/full_coverage/end_recall.cpp
+#        util/util.cpp
+#        util/thread_pool.cpp)
 
 
 # compare the qurey and insert and prove unreachable_points_phenomenon
@@ -467,6 +485,24 @@ add_executable(faiss_full_coverage_sift100M replaced_update_vaild/Sift100M/full_
         util/util.cpp
         util/thread_pool.cpp)
 
+add_executable(edge_connected_replaced_update_7_random_sift100M replaced_update_vaild/Sift100M/random/edge_connected_7.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_8_random_sift100M replaced_update_vaild/Sift100M/random/edge_connected_8.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_9_random_sift100M replaced_update_vaild/Sift100M/random/edge_connected_9.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(edge_connected_replaced_update_10_random_sift100M replaced_update_vaild/Sift100M/random/edge_connected_10.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(replaced_update_random_sift100M replaced_update_vaild/Sift100M/random/replaced_update.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
+add_executable(faiss_random_sift100M replaced_update_vaild/Sift100M/random/faiss_ivf_flat.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 
 

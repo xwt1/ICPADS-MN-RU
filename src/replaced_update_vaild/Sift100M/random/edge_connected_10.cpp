@@ -16,6 +16,128 @@
 #include <chrono>
 #include "util.h"
 
+// 添加 get_bvecs_file_info 函数
+void get_bvecs_file_info(const std::string& filename, int& dim, size_t& num_vectors) {
+    std::ifstream input(filename, std::ios::binary);
+    if (!input) {
+        std::cerr << "无法打开文件: " << filename << std::endl;
+        exit(1);
+    }
+
+    // 读取第一个向量的维度
+    int temp_dim;
+    input.read(reinterpret_cast<char*>(&temp_dim), sizeof(int));
+    if (input.fail()) {
+        std::cerr << "读取维度失败。" << std::endl;
+        exit(1);
+    }
+    dim = temp_dim;
+
+    // 获取文件大小
+    input.seekg(0, std::ios::end);
+    std::streampos file_size = input.tellg();
+
+    // 计算向量数量
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(uint8_t) * dim;
+    num_vectors = file_size / vector_size_in_bytes;
+
+    input.close();
+}
+
+// 添加 load_bvecs_range 函数
+std::vector<std::vector<float>> load_bvecs_range(const std::string& filename, size_t start_idx, size_t count, int dim) {
+    std::vector<std::vector<float>> data;
+    std::ifstream input(filename, std::ios::binary);
+    if (!input) {
+        std::cerr << "无法打开文件: " << filename << std::endl;
+        exit(1);
+    }
+
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(uint8_t) * dim;
+    size_t start_pos = start_idx * vector_size_in_bytes;
+
+    // 移动文件指针到起始位置
+    input.seekg(start_pos, std::ios::beg);
+    if (input.fail()) {
+        std::cerr << "无法定位到文件中的起始位置。" << std::endl;
+        exit(1);
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        int cur_dim = 0;
+        input.read(reinterpret_cast<char*>(&cur_dim), sizeof(int));
+        if (cur_dim != dim) {
+            std::cerr << "维度不匹配，预期: " << dim << ", 实际: " << cur_dim << std::endl;
+            exit(1);
+        }
+        std::vector<uint8_t> vec_uint8(dim);
+        input.read(reinterpret_cast<char*>(vec_uint8.data()), sizeof(uint8_t) * dim);
+        if (input.fail()) {
+            std::cerr << "读取向量失败。" << std::endl;
+            exit(1);
+        }
+        // 将 uint8_t 数据转换为 float
+        std::vector<float> vec_float(dim);
+        for (int d = 0; d < dim; ++d) {
+            vec_float[d] = static_cast<float>(vec_uint8[d]);
+        }
+        data.push_back(std::move(vec_float));
+    }
+
+    input.close();
+    return data;
+}
+
+// 添加 load_bvecs_batch 函数
+std::vector<std::vector<float>> load_bvecs_batch(const std::string& filename, const std::vector<size_t>& indices, int dim) {
+    std::vector<std::vector<float>> data;
+    std::ifstream input(filename, std::ios::binary);
+    if (!input) {
+        std::cerr << "无法打开文件: " << filename << std::endl;
+        exit(1);
+    }
+
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(uint8_t) * dim;
+
+    for (size_t idx : indices) {
+        // 计算对应向量的起始位置
+        size_t start_pos = idx * vector_size_in_bytes;
+
+        // 移动文件指针到指定位置
+        input.seekg(start_pos, std::ios::beg);
+        if (input.fail()) {
+            std::cerr << "无法定位到文件中的位置: " << idx << std::endl;
+            exit(1);
+        }
+
+        int cur_dim = 0;
+        input.read(reinterpret_cast<char*>(&cur_dim), sizeof(int));
+        if (cur_dim != dim) {
+            std::cerr << "维度不匹配，预期: " << dim << ", 实际: " << cur_dim << std::endl;
+            exit(1);
+        }
+
+        // 读取向量数据
+        std::vector<uint8_t> vec_uint8(dim);
+        input.read(reinterpret_cast<char*>(vec_uint8.data()), sizeof(uint8_t) * dim);
+        if (input.fail()) {
+            std::cerr << "读取向量失败，位置: " << idx << std::endl;
+            exit(1);
+        }
+
+        // 将 uint8_t 数据转换为 float
+        std::vector<float> vec_float(dim);
+        for (int d = 0; d < dim; ++d) {
+            vec_float[d] = static_cast<float>(vec_uint8[d]);
+        }
+
+        data.push_back(std::move(vec_float));
+    }
+
+    input.close();
+    return data;
+}
+
 int main(int argc, char* argv[]){
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <root_path>" << std::endl;
@@ -23,23 +145,39 @@ int main(int argc, char* argv[]){
     }
     std::string root_path = argv[1];
 
-    std::string data_path = "/root/WorkSpace/dataset/sift/bigann_base.bvecs";
-    std::string query_path = "/root/WorkSpace/dataset/sift/sift200M/bigann_query.bvecs";
-    std::string index_path = "/root/WorkSpace/dataset/sift/sift200M/index/sift_100M_index.bin";
-    std::string ground_truth_path = "/root/WorkSpace/dataset/sift/sift200M/gnd/idx_100M.ivecs";
-    std::string output_csv_path = root_path + "/output/full_coverage/sift/edge_connected_replaced_update10.csv";
-    std::string output_index_path = root_path + "/output/full_coverage/sift/edge_connected_replaced_update10_sift_full_coverage_index.bin";
+
+    std::string data_path = root_path + "/sift/bigann_base.bvecs";
+    std::string query_path = root_path + "/sift/sift200M/bigann_query.bvecs";
+    std::string index_path = root_path + "/sift/sift200M/index/sift_100M_index.bin";
+    std::string ground_truth_path = root_path + "/sift/sift200M/gnd/idx_100M.ivecs";
+    std::string output_csv_path = root_path + "/output/random/sift200M/edge_connected_replaced_update10.csv";
+    std::string output_index_path = root_path + "/output/random/sift200M/edge_connected_replaced_update10_sift100M_random_index.bin";
+
+    std::string random_indice_path = "/root/WorkSpace/dataset/sift/sift200M/sift100M_random_data.ivecs";
 
     std::vector<std::string> paths_to_create ={output_csv_path,output_index_path};
     util::create_directories(paths_to_create);
 
-    int dim, num_data, num_queries;
-    std::vector<std::vector<float>> data = util::load_fvecs(data_path, dim, num_data);
-    std::vector<std::vector<float>> queries = util::load_fvecs(query_path, dim, num_queries);
 
-    size_t data_siz = data.size();
 
-    int k = 100;
+
+//    std::vector<std::vector<float>> data = util::load_fvecs(data_path, dim, num_data);
+    int dim = 128, num_queries = 10000;
+    std::vector<std::vector<float>> queries = load_bvecs_range(query_path, 0, num_queries, dim);
+
+
+    // 获取数据集信息而不加载到内存中
+    size_t num_data = 0;
+    get_bvecs_file_info(data_path, dim, num_data);
+
+    num_data = 100000000;
+    size_t data_siz = 100000000;
+
+    int random_data_num_per_iteration, num_iterations;
+    std::vector<std::vector<size_t>> random_data = util::load_ivecs(random_indice_path,random_data_num_per_iteration,num_iterations);
+
+
+    int k = 1000;
 
     // Initialize the HNSW index
     hnswlib::L2Space space(dim);
@@ -55,11 +193,10 @@ int main(int argc, char* argv[]){
     index.setEf(ef);
 
     int num_threads = 40;
-
     // Number of iterations for delete and re-add process
-    int num_iterations = 100;
-    std::random_device rd;
-    std::mt19937 gen(rd());
+//    int num_iterations = 200;
+//    std::random_device rd;
+//    std::mt19937 gen(rd());
 
     // Perform initial brute-force k-NN search to get ground truth
     std::vector<std::vector<size_t>> ground_truth = util::load_ivecs_indices(ground_truth_path);
@@ -73,29 +210,17 @@ int main(int argc, char* argv[]){
 
     size_t last_idx = 0;
     for (int iteration = 0; iteration < num_iterations; ++iteration) {
-        std::unordered_set<size_t> delete_indices_set;
-
-        // 计算后一半结点的起始下标
-        size_t start_idx = last_idx;
-        int num_to_delete = num_data / num_iterations;
-        double delete_rate = (double)num_to_delete / num_data;
-        last_idx =  start_idx+num_to_delete;
-
-
-        // 将后一半结点的下标插入到集合中
-        for (size_t idx = start_idx; idx < start_idx+num_to_delete; ++idx) {
-            delete_indices_set.insert(idx);
-        }
-
-        std::vector<size_t> delete_indices(delete_indices_set.begin(), delete_indices_set.end());
-
+        int num_to_delete = random_data[iteration].size();
+        std::vector<size_t> delete_indices(random_data[iteration].begin(),random_data[iteration].end());
 
         // Save the vectors and their labels to be deleted before deleting them
-        std::vector<std::vector<float>> deleted_vectors(delete_indices.size(), std::vector<float>(dim));
-        for (size_t i = 0; i < delete_indices.size(); ++i) {
-            size_t idx = delete_indices[i];
-            deleted_vectors[i] = data[idx];
-        }
+        std::vector<std::vector<float>> deleted_vectors = load_bvecs_batch(data_path, delete_indices, dim);
+//        std::vector<std::vector<float>> deleted_vectors(delete_indices.size(), std::vector<float>(dim));
+
+//        for (size_t i = 0; i < delete_indices.size(); ++i) {
+//            size_t idx = delete_indices[i];
+//            deleted_vectors[i] = data[idx];
+//        }
 
         auto start_time_delete = std::chrono::high_resolution_clock::now();
         util::markDeleteMultiThread(index, delete_indices, index_map, num_threads);
@@ -135,7 +260,7 @@ int main(int argc, char* argv[]){
 
         std::cout << "------------------------------------------------------------------" << std::endl;
         std::cout << "Iteration " << iteration + 1 << ":\n";
-        std::cout<<"删除了大约"<<delete_rate<<"的点"<<std::endl;
+        std::cout<<"删除了"<<num_to_delete<<"个点"<<std::endl;
         std::cout << "RECALL: " << recall << "\n";
         std::cout << "Avg Delete Time: " << avg_delete_time << " seconds\n";
         std::cout << "Avg Add Time: " << avg_add_time << " seconds\n";
@@ -143,7 +268,7 @@ int main(int argc, char* argv[]){
         std::cout << "Avg SUM Delete Add Time: " << avg_sum_delete_add_time << " seconds\n";
 
         std::vector<std::vector<float>> queries_tmp(queries.begin(),queries.begin()+1);
-        auto results = util::query_index(&index, queries_tmp, data.size());
+        auto results = util::query_index(&index, queries_tmp, data_siz);
         std::unordered_map <size_t,bool> excluded_global_labels_all;
         for (size_t j = 0; j < queries_tmp.size(); ++j) {
             std::cout << "Query " << j << ":" << std::endl;

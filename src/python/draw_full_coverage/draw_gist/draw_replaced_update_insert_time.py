@@ -108,9 +108,8 @@ if __name__ == "__main__":
         'edge_connected_replaced_update8.csv',
         'edge_connected_replaced_update9.csv',
         'edge_connected_replaced_update10.csv',
-        'faiss_replaced_update.csv',
         'replaced_update.csv',
-
+        'faiss_replaced_update.csv',
     ]
     # 手动编码的颜色和点的形状
     colors = ['r', 'g', 'b', 'm', 'c', 'y']  # 添加了一个额外的颜色'y'（黄色）
