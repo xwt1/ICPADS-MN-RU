@@ -77,7 +77,9 @@ int main(int argc, char* argv[]){
 
     std::vector <std::vector <std::string>> csv_index_path_vec = {
             {root_path + "/output/random/sift200M/faiss_end_recall_sift_100M.csv",
-             root_path + "/output/random/sift200M/faiss_sift_output_index.bin",
+
+             "/root/WorkSpace/dataset/sift/sift200M/index/faiss_ivf_index.bin",
+//             root_path + "/output/random/sift200M/faiss_sift_output_index.bin",
              root_path + "/sift/bigann_base.bvecs",
              root_path + "/sift/sift200M/bigann_query.bvecs",
              root_path + "/sift/sift200M/gnd/idx_100M.ivecs",}
@@ -122,7 +124,7 @@ int main(int argc, char* argv[]){
 
         // Set parameters for searching
         int start_ef = 20;
-        int end_ef = 300;
+        int end_ef = 100;
         int step = 5;
         int num_threads = 40;
 

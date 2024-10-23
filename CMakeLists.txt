@@ -311,6 +311,8 @@ target_link_libraries(end_recall_sift100M_random PRIVATE maintenance_hnswlib)
 target_link_libraries(end_recall_faiss_sift100M_random PRIVATE ${FAISS_LIB} OpenMP::OpenMP_CXX ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 target_link_libraries(end_recall_faiss_sift100M_random PRIVATE maintenance_hnswlib)
 
+target_link_libraries(take_random_vector PRIVATE maintenance_hnswlib)
+
 # Back Up Index build
 target_link_libraries(back_up_edge_connected_9 PRIVATE hnswlib)
 

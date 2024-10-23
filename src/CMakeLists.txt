@@ -504,7 +504,9 @@ add_executable(faiss_random_sift100M replaced_update_vaild/Sift100M/random/faiss
         util/util.cpp
         util/thread_pool.cpp)
 
-
+add_executable(take_random_vector replaced_update_vaild/Sift100M/random/take_random_vector.cpp
+        util/util.cpp
+        util/thread_pool.cpp)
 
 # Back Up Index Build
 add_executable(back_up_edge_connected_9 replaced_update_vaild/back_up_index_compare/gist/edge_connected_9.cpp

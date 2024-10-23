@@ -88,6 +88,45 @@ std::vector<std::vector<float>> load_bvecs_range(const std::string& filename, si
     return data;
 }
 
+// 添加 load_fvecs_range 函数
+std::vector<std::vector<float>> load_fvecs_range(const std::string& filename, size_t start_idx, size_t count, int dim) {
+    std::vector<std::vector<float>> data;
+    std::ifstream input(filename, std::ios::binary);
+    if (!input) {
+        std::cerr << "无法打开文件: " << filename << std::endl;
+        exit(1);
+    }
+
+    size_t vector_size_in_bytes = sizeof(int) + sizeof(float) * dim;
+    size_t start_pos = start_idx * vector_size_in_bytes;
+
+    // 移动文件指针到起始位置
+    input.seekg(start_pos, std::ios::beg);
+    if (input.fail()) {
+        std::cerr << "无法定位到文件中的起始位置。" << std::endl;
+        exit(1);
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        int cur_dim = 0;
+        input.read(reinterpret_cast<char*>(&cur_dim), sizeof(int));
+        if (cur_dim != dim) {
+            std::cerr << "维度不匹配，预期: " << dim << ", 实际: " << cur_dim << std::endl;
+            exit(1);
+        }
+        std::vector<float> vec_float(dim);
+        input.read(reinterpret_cast<char*>(vec_float.data()), sizeof(float) * dim);
+        if (input.fail()) {
+            std::cerr << "读取向量失败。" << std::endl;
+            exit(1);
+        }
+        data.push_back(std::move(vec_float));
+    }
+
+    input.close();
+    return data;
+}
+
 // 添加 load_bvecs_batch 函数
 std::vector<std::vector<float>> load_bvecs_batch(const std::string& filename, const std::vector<size_t>& indices, int dim) {
     std::vector<std::vector<float>> data;
@@ -139,6 +178,7 @@ std::vector<std::vector<float>> load_bvecs_batch(const std::string& filename, co
 }
 
 int main(int argc, char* argv[]){
+    // 由于有预处理,一个程序约需要运行7天左右.
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <root_path>" << std::endl;
         return 1;
@@ -154,6 +194,7 @@ int main(int argc, char* argv[]){
     std::string output_index_path = root_path + "/output/random/sift200M/edge_connected_replaced_update10_sift100M_random_index.bin";
 
     std::string random_indice_path = "/root/WorkSpace/dataset/sift/sift200M/sift100M_random_data.ivecs";
+    std::string random_vector_path = "/root/WorkSpace/dataset/sift/sift200M/take_random_vector.fvecs";
 
     std::vector<std::string> paths_to_create ={output_csv_path,output_index_path};
     util::create_directories(paths_to_create);
@@ -206,7 +247,7 @@ int main(int argc, char* argv[]){
     std::vector<std::vector <std::string>> header = {{"iteration_number" , "unreachable_points_number","recall","avg_delete_time",
                                                       "avg_add_time","avg_sum_delete_add_time","avg_query_time"}};
     util::writeCSVOut(output_csv_path, header);
-
+    std::cout << "文件写入完毕 " << std::endl;
 
     size_t last_idx = 0;
     for (int iteration = 0; iteration < num_iterations; ++iteration) {
@@ -214,14 +255,17 @@ int main(int argc, char* argv[]){
         std::vector<size_t> delete_indices(random_data[iteration].begin(),random_data[iteration].end());
 
         // Save the vectors and their labels to be deleted before deleting them
-        std::vector<std::vector<float>> deleted_vectors = load_bvecs_batch(data_path, delete_indices, dim);
+
+        std::vector<std::vector<float>> deleted_vectors = load_fvecs_range(random_vector_path, iteration * num_to_delete, num_to_delete, dim);
+
+//        std::vector<std::vector<float>> deleted_vectors = load_bvecs_batch(data_path, delete_indices, dim);
 //        std::vector<std::vector<float>> deleted_vectors(delete_indices.size(), std::vector<float>(dim));
 
 //        for (size_t i = 0; i < delete_indices.size(); ++i) {
 //            size_t idx = delete_indices[i];
 //            deleted_vectors[i] = data[idx];
 //        }
-
+        std::cout << "开始删除 " << std::endl;
         auto start_time_delete = std::chrono::high_resolution_clock::now();
         util::markDeleteMultiThread(index, delete_indices, index_map, num_threads);
         auto end_time_delete = std::chrono::high_resolution_clock::now();
@@ -237,11 +281,14 @@ int main(int argc, char* argv[]){
             index_map[delete_indices[i]] = new_idx;
         }
 
+        std::cout << "开始添加 " << std::endl;
         auto start_time_add = std::chrono::high_resolution_clock::now();
         util::addPointsMultiThread(index, deleted_vectors, new_indices, num_threads);
         auto end_time_add = std::chrono::high_resolution_clock::now();
         auto add_duration = std::chrono::duration<double>(end_time_add - start_time_add).count();
 
+
+        std::cout << "开始查询 " << std::endl;
         // Perform k-NN search and measure recall and query time
         std::vector<std::vector<size_t>> labels;
 
